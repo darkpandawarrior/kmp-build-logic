@@ -1,0 +1,11 @@
+[versions]
+agp = "9.2.1"
+kotlin = "2.4.0"
+compose-multiplatform = "1.11.1"
+
+[libraries]
+# Gradle-plugin artifacts the convention plugins apply programmatically (compileOnly in convention/build.gradle.kts)
+android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+compose-gradlePlugin = { module = "org.jetbrains.compose:compose-gradle-plugin", version.ref = "compose-multiplatform" }
+composeCompiler-gradlePlugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
