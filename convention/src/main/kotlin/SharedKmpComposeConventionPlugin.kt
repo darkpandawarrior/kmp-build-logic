@@ -51,21 +51,30 @@ class SharedKmpComposeConventionPlugin : Plugin<Project> {
      * `:app` (the only module with real Android assets support — see the workaround above) can
      * pull it into its own merged assets. `isCanBeResolved = false` — this configuration is
      * publish-only, nothing in this module ever resolves it.
+     *
+     * The configuration itself must exist as soon as this project is configured — cross-project
+     * variant resolution needs to see it during the consumer's configuration phase, not merely by
+     * task-execution time — so, unlike the workaround above, `tasks.configureEach` (realization-time)
+     * isn't sufficient here. But `copyAndroidMainComposeResourcesToAndroidAssets` also isn't
+     * registered yet at this plugin's `apply()` time (CMP registers it later while finishing this
+     * project's own configuration), so `tasks.named(...)` can't be resolved eagerly either. `provider
+     * { tasks.getByName(...) }` defers that lookup to when the artifact is actually queried
+     * (build-graph time, well after this project has finished configuring) without an `afterEvaluate`
+     * block.
      */
     private fun Project.configureComposeResourcesAndroidAssetsElements() {
-        afterEvaluate {
-            val composeAssetsTask = tasks.named("copyAndroidMainComposeResourcesToAndroidAssets")
-            val outputDirectory: Provider<Directory> =
-                composeAssetsTask.flatMap { task ->
-                    @Suppress("UNCHECKED_CAST")
-                    task.javaClass.getMethod("getOutputDirectory").invoke(task) as DirectoryProperty
-                }
-            configurations.create("composeAndroidAssetsElements") {
-                isCanBeConsumed = true
-                isCanBeResolved = false
-                outgoing.artifact(outputDirectory) {
-                    builtBy(composeAssetsTask)
-                }
+        val composeAssetsTaskName = "copyAndroidMainComposeResourcesToAndroidAssets"
+        val outputDirectory: Provider<Directory> =
+            provider {
+                val task = tasks.getByName(composeAssetsTaskName)
+                @Suppress("UNCHECKED_CAST")
+                task.javaClass.getMethod("getOutputDirectory").invoke(task) as DirectoryProperty
+            }.flatMap { it }
+        configurations.create("composeAndroidAssetsElements") {
+            isCanBeConsumed = true
+            isCanBeResolved = false
+            outgoing.artifact(outputDirectory) {
+                builtBy(composeAssetsTaskName)
             }
         }
     }
