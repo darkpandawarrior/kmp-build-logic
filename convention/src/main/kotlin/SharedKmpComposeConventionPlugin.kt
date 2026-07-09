@@ -1,6 +1,8 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.file.Directory
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.provider.Provider
 
 /**
  * Convention plugin for a Kotlin Multiplatform **Compose** library targeting Android + iOS.
@@ -17,6 +19,7 @@ class SharedKmpComposeConventionPlugin : Plugin<Project> {
         }
         configureComposeCompilerMetrics()
         configureComposeResourcesAndroidAssetsWorkaround()
+        configureComposeResourcesAndroidAssetsElements()
     }
 
     /**
@@ -39,6 +42,30 @@ class SharedKmpComposeConventionPlugin : Plugin<Project> {
                 val outputDirectory =
                     this.javaClass.getMethod("getOutputDirectory").invoke(this) as DirectoryProperty
                 outputDirectory.set(layout.buildDirectory.dir("composeResourcesForAndroidAssets"))
+            }
+        }
+    }
+
+    /**
+     * Exposes this module's fixed compose-resources output as a consumable Gradle variant so
+     * `:app` (the only module with real Android assets support — see the workaround above) can
+     * pull it into its own merged assets. `isCanBeResolved = false` — this configuration is
+     * publish-only, nothing in this module ever resolves it.
+     */
+    private fun Project.configureComposeResourcesAndroidAssetsElements() {
+        afterEvaluate {
+            val composeAssetsTask = tasks.named("copyAndroidMainComposeResourcesToAndroidAssets")
+            val outputDirectory: Provider<Directory> =
+                composeAssetsTask.flatMap { task ->
+                    @Suppress("UNCHECKED_CAST")
+                    task.javaClass.getMethod("getOutputDirectory").invoke(task) as DirectoryProperty
+                }
+            configurations.create("composeAndroidAssetsElements") {
+                isCanBeConsumed = true
+                isCanBeResolved = false
+                outgoing.artifact(outputDirectory) {
+                    builtBy(composeAssetsTask)
+                }
             }
         }
     }
