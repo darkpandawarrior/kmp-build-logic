@@ -1,7 +1,6 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.kotlin.dsl.named
 
 /**
  * Convention plugin for a Kotlin Multiplatform **Compose** library targeting Android + iOS.
