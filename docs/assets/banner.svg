@@ -1,0 +1,68 @@
+<svg viewBox="0 0 960 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="kmp-build-logic">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d1117"/>
+      <stop offset="100%" stop-color="#161b22"/>
+    </linearGradient>
+    <linearGradient id="wordmark" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7F52FF"/>
+      <stop offset="55%" stop-color="#4285F4"/>
+      <stop offset="100%" stop-color="#3DDC84"/>
+    </linearGradient>
+    <radialGradient id="nodeGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4285F4" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#4285F4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="1" y="1" width="958" height="218" rx="18" fill="url(#bg)" stroke="#30363d" stroke-width="1"/>
+
+  <text x="48" y="98" font-family="'Segoe UI', -apple-system, Helvetica, Arial, sans-serif" font-size="52" font-weight="800" fill="url(#wordmark)">kmp-build-logic</text>
+  <text x="50" y="128" font-family="'Segoe UI', -apple-system, Helvetica, Arial, sans-serif" font-size="17" fill="#8b949e">Kotlin Multiplatform &#183; Gradle convention plugins &#183; write it once, apply it everywhere</text>
+
+  <!-- build pipeline motif: 5 nodes, one per convention plugin, lighting up in sequence -->
+  <line x1="90" y1="172" x2="870" y2="172" stroke="#30363d" stroke-width="2"/>
+
+  <g>
+    <circle cx="90" cy="172" r="16" fill="url(#nodeGlow)"/>
+    <circle cx="90" cy="172" r="7" fill="#4285F4">
+      <animate attributeName="fill-opacity" values="0.35;1;0.35" dur="2.4s" begin="0s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  <g>
+    <circle cx="285" cy="172" r="16" fill="url(#nodeGlow)"/>
+    <circle cx="285" cy="172" r="7" fill="#4285F4">
+      <animate attributeName="fill-opacity" values="0.35;1;0.35" dur="2.4s" begin="0.4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  <g>
+    <circle cx="480" cy="172" r="16" fill="url(#nodeGlow)"/>
+    <circle cx="480" cy="172" r="7" fill="#7F52FF">
+      <animate attributeName="fill-opacity" values="0.35;1;0.35" dur="2.4s" begin="0.8s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  <g>
+    <circle cx="675" cy="172" r="16" fill="url(#nodeGlow)"/>
+    <circle cx="675" cy="172" r="7" fill="#3DDC84">
+      <animate attributeName="fill-opacity" values="0.35;1;0.35" dur="2.4s" begin="1.2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  <g>
+    <circle cx="870" cy="172" r="16" fill="url(#nodeGlow)"/>
+    <circle cx="870" cy="172" r="7" fill="#3DDC84">
+      <animate attributeName="fill-opacity" values="0.35;1;0.35" dur="2.4s" begin="1.6s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- traveling build signal -->
+  <circle r="4" fill="#ffffff">
+    <animateMotion dur="2.4s" repeatCount="indefinite" path="M 90 172 L 870 172"/>
+    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.9;1" dur="2.4s" repeatCount="indefinite"/>
+  </circle>
+
+  <text x="90" y="204" font-family="'Segoe UI', -apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#6e7681">library</text>
+  <text x="255" y="204" font-family="'Segoe UI', -apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#6e7681">compose</text>
+  <text x="450" y="204" font-family="'Segoe UI', -apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#6e7681">feature</text>
+  <text x="655" y="204" font-family="'Segoe UI', -apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#6e7681">test</text>
+  <text x="828" y="204" font-family="'Segoe UI', -apple-system, Helvetica, Arial, sans-serif" font-size="12" fill="#6e7681">application</text>
+</svg>
