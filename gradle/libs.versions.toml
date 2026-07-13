@@ -21,7 +21,9 @@ ktlint-gradlePlugin = { module = "org.jlleitschuh.gradle:ktlint-gradle", version
 spotless-gradlePlugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotlessVersion" }
 kover-gradlePlugin = { module = "org.jetbrains.kotlinx:kover-gradle-plugin", version.ref = "kover" }
 # Ruleset consumed by SharedDetektConventionPlugin via `detektPlugins` at consumer build time (not compileOnly).
-detekt-formatting = { module = "dev.detekt:detekt-formatting", version.ref = "detekt" }
+# Detekt 2.x moved the ktlint-style formatting rules out of `detekt-formatting` (which does not
+# exist in the 2.x line) into `detekt-rules-ktlint-wrapper`. Alias kept for consumer stability.
+detekt-formatting = { module = "dev.detekt:detekt-rules-ktlint-wrapper", version.ref = "detekt" }
 # Room 3 (KMP) + KSP + kmp-product-flavors gradle-plugin artifacts, compileOnly'd for the same
 # ClassCastException-avoidance reason as the artifacts above.
 room-gradlePlugin = { module = "androidx.room3:room3-gradle-plugin", version.ref = "room" }
