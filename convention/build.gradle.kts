@@ -25,6 +25,9 @@ dependencies {
     compileOnly(libs.ktlint.gradlePlugin)
     compileOnly(libs.spotless.gradlePlugin)
     compileOnly(libs.kover.gradlePlugin)
+    compileOnly(libs.room.gradlePlugin)
+    compileOnly(libs.ksp.gradlePlugin)
+    compileOnly(libs.kmpFlavors.gradlePlugin)
 }
 
 tasks.validatePlugins {
@@ -71,6 +74,22 @@ gradlePlugin {
         register("kover") {
             id = "shared.kover"
             implementationClass = "SharedKoverConventionPlugin"
+        }
+        register("koin") {
+            id = "shared.koin"
+            implementationClass = "SharedKoinConventionPlugin"
+        }
+        register("room") {
+            id = "shared.room"
+            implementationClass = "SharedRoomConventionPlugin"
+        }
+        register("flavors") {
+            id = "shared.flavors"
+            implementationClass = "SharedFlavorsConventionPlugin"
+        }
+        register("kmpPure") {
+            id = "shared.kmp.pure"
+            implementationClass = "SharedKmpPureConventionPlugin"
         }
     }
 }

@@ -6,6 +6,9 @@ detekt = "2.0.0-alpha.5"
 ktlint = "14.2.0"
 spotlessVersion = "8.8.0"
 kover = "0.9.8"
+room = "3.0.0"
+ksp = "2.3.10"
+kmpFlavors = "2.8.3"
 
 [libraries]
 # Gradle-plugin artifacts the convention plugins apply programmatically (compileOnly in convention/build.gradle.kts)
@@ -19,3 +22,8 @@ spotless-gradlePlugin = { module = "com.diffplug.spotless:spotless-plugin-gradle
 kover-gradlePlugin = { module = "org.jetbrains.kotlinx:kover-gradle-plugin", version.ref = "kover" }
 # Ruleset consumed by SharedDetektConventionPlugin via `detektPlugins` at consumer build time (not compileOnly).
 detekt-formatting = { module = "dev.detekt:detekt-formatting", version.ref = "detekt" }
+# Room 3 (KMP) + KSP + kmp-product-flavors gradle-plugin artifacts, compileOnly'd for the same
+# ClassCastException-avoidance reason as the artifacts above.
+room-gradlePlugin = { module = "androidx.room3:room3-gradle-plugin", version.ref = "room" }
+ksp-gradlePlugin = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+kmpFlavors-gradlePlugin = { module = "io.github.mobilebytelabs.kmpflavors:flavor-plugin", version.ref = "kmpFlavors" }
