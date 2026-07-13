@@ -2,6 +2,10 @@
 agp = "9.4.0-alpha04"
 kotlin = "2.4.20-Beta1"
 compose-multiplatform = "1.12.0-beta01"
+detekt = "2.0.0-alpha.5"
+ktlint = "14.2.0"
+spotlessVersion = "8.8.0"
+kover = "0.9.8"
 
 [libraries]
 # Gradle-plugin artifacts the convention plugins apply programmatically (compileOnly in convention/build.gradle.kts)
@@ -9,3 +13,9 @@ android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref 
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 compose-gradlePlugin = { module = "org.jetbrains.compose:compose-gradle-plugin", version.ref = "compose-multiplatform" }
 composeCompiler-gradlePlugin = { module = "org.jetbrains.kotlin:compose-compiler-gradle-plugin", version.ref = "kotlin" }
+detekt-gradlePlugin = { module = "dev.detekt:detekt-gradle-plugin", version.ref = "detekt" }
+ktlint-gradlePlugin = { module = "org.jlleitschuh.gradle:ktlint-gradle", version.ref = "ktlint" }
+spotless-gradlePlugin = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotlessVersion" }
+kover-gradlePlugin = { module = "org.jetbrains.kotlinx:kover-gradle-plugin", version.ref = "kover" }
+# Ruleset consumed by SharedDetektConventionPlugin via `detektPlugins` at consumer build time (not compileOnly).
+detekt-formatting = { module = "dev.detekt:detekt-formatting", version.ref = "detekt" }

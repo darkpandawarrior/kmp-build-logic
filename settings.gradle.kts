@@ -17,6 +17,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // org.jlleitschuh.gradle:ktlint-gradle only publishes to the Gradle Plugin Portal, not
+        // Maven Central — needed as a compileOnly dep for SharedKtlintConventionPlugin.
+        gradlePluginPortal()
     }
     // NOTE: no explicit `versionCatalogs { create("libs") { from(...) } }` block here — this repo's
     // catalog already lives at the Gradle-conventional `gradle/libs.versions.toml` path, which Gradle

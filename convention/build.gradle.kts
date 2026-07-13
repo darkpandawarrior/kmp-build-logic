@@ -21,6 +21,10 @@ dependencies {
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.compose.gradlePlugin)
     compileOnly(libs.composeCompiler.gradlePlugin)
+    compileOnly(libs.detekt.gradlePlugin)
+    compileOnly(libs.ktlint.gradlePlugin)
+    compileOnly(libs.spotless.gradlePlugin)
+    compileOnly(libs.kover.gradlePlugin)
 }
 
 tasks.validatePlugins {
@@ -51,6 +55,22 @@ gradlePlugin {
         register("androidApplication") {
             id = "shared.android.application"
             implementationClass = "SharedAndroidApplicationConventionPlugin"
+        }
+        register("detekt") {
+            id = "shared.detekt"
+            implementationClass = "SharedDetektConventionPlugin"
+        }
+        register("ktlint") {
+            id = "shared.ktlint"
+            implementationClass = "SharedKtlintConventionPlugin"
+        }
+        register("spotless") {
+            id = "shared.spotless"
+            implementationClass = "SharedSpotlessConventionPlugin"
+        }
+        register("kover") {
+            id = "shared.kover"
+            implementationClass = "SharedKoverConventionPlugin"
         }
     }
 }
