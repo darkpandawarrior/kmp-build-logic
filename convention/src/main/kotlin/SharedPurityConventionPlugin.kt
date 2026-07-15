@@ -17,9 +17,9 @@ import org.gradle.kotlin.dsl.register
  *         // configuration defaults to "jvmRuntimeClasspath"
  *     }
  *
- * Note: like any classpath-resolving verification task, `checkPurity` reads project state at execution
- * time and is therefore not configuration-cache compatible — the same trade-off the inline tripwire it
- * replaces already made.
+ * Configuration-cache safe: the resolved coordinates are read through a `NamedDomainObjectProvider`
+ * (a serializable handle), not a live `ConfigurationContainer`, so the task action never derefs the
+ * project at execution.
  */
 abstract class PurityExtension {
     /** Coordinate substrings that must not appear on the resolved [configuration]. Empty = no-op. */
@@ -30,7 +30,7 @@ abstract class PurityExtension {
 }
 
 class SharedPurityConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) =
+    override fun apply(target: Project) {
         with(target) {
             val ext = extensions.create<PurityExtension>("purity")
             ext.configuration.convention("jvmRuntimeClasspath")
@@ -39,20 +39,29 @@ class SharedPurityConventionPlugin : Plugin<Project> {
                 tasks.register("checkPurity") {
                     group = "verification"
                     description = "Fails if the module resolves any forbidden dependency coordinate."
-                    val forbidden = ext.forbidden
-                    val configName = ext.configuration
-                    doLast {
-                        val forbid = forbidden.get()
-                        if (forbid.isEmpty()) return@doLast
-                        val cfg = target.configurations.findByName(configName.get()) ?: return@doLast
-                        val requested =
-                            cfg.incoming.resolutionResult.allDependencies
-                                .map { it.requested.toString() }
-                        val violations = requested.filter { d -> forbid.any { d.contains(it) } }
-                        check(violations.isEmpty()) { "PURITY VIOLATION ($path): $violations" }
-                    }
                 }
             tasks.named("check") { dependsOn(checkPurity) }
-            Unit
+
+            // afterEvaluate: the configuration name is known and its Configuration exists by now, so we
+            // resolve the NamedDomainObjectProvider here (config time) and only map/read it lazily.
+            afterEvaluate {
+                val configName = ext.configuration.get()
+                val cfgProvider = configurations.named(configName)
+                val forbiddenProp = ext.forbidden
+                val projectPath = path
+                checkPurity.configure {
+                    val coords =
+                        cfgProvider.map { cfg ->
+                            cfg.incoming.resolutionResult.allDependencies.map { it.requested.toString() }
+                        }
+                    doLast {
+                        val forbid = forbiddenProp.get()
+                        if (forbid.isEmpty()) return@doLast
+                        val violations = coords.get().filter { d -> forbid.any { d.contains(it) } }
+                        check(violations.isEmpty()) { "PURITY VIOLATION ($projectPath): $violations" }
+                    }
+                }
+            }
         }
+    }
 }
