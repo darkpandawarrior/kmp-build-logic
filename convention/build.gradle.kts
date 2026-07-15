@@ -59,6 +59,10 @@ gradlePlugin {
             id = "shared.android.application"
             implementationClass = "SharedAndroidApplicationConventionPlugin"
         }
+        register("androidLibrary") {
+            id = "shared.android.library"
+            implementationClass = "SharedAndroidLibraryConventionPlugin"
+        }
         register("detekt") {
             id = "shared.detekt"
             implementationClass = "SharedDetektConventionPlugin"
