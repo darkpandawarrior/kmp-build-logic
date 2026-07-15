@@ -1,68 +1,169 @@
 <div align="center">
 
-<img src="docs/assets/banner.svg" alt="kmp-build-logic" width="100%" />
+<img src="docs/assets/banner.svg" alt="kmp-build-logic" width="700"/>
 
 ### Shared Gradle convention plugins for Kotlin Multiplatform + Compose Multiplatform projects — write the module config once, apply it with one line everywhere.
 
+[![CI](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/ci.yml/badge.svg)](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/ci.yml)
+[![No AI attribution](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/no-ai-attribution.yml/badge.svg)](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/no-ai-attribution.yml)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.4.20--Beta1-7F52FF?logo=kotlin&logoColor=white)
 ![AGP](https://img.shields.io/badge/AGP-9.4.0--alpha04-3DDC84?logo=android&logoColor=white)
 ![Compose Multiplatform](https://img.shields.io/badge/Compose%20MP-1.12.0--beta01-4285F4?logo=jetpackcompose&logoColor=white)
-![Plugins](https://img.shields.io/badge/plugins-13-success)
+![Plugins](https://img.shields.io/badge/plugins-14-success)
 ![License](https://img.shields.io/badge/license-MIT-blue)
+
+**[Why](#why-this-exists)** · **[Features](#features)** · **[Architecture](#architecture)** · **[Tech stack](#tech-stack)** · **[Getting started](#getting-started)** · **[Roadmap](#roadmap)**
+
+**Portfolio:** [cv-siddharth.vercel.app](https://cv-siddharth.vercel.app/) &nbsp;·&nbsp; **Consumers:** [Mileway](https://github.com/darkpandawarrior/Mileway) &nbsp;·&nbsp; [PaymentsLab](https://github.com/darkpandawarrior/PaymentsLab)
 
 </div>
 
 ---
 
+<details>
+<summary><b>Table of contents</b></summary>
+
+- [Why this exists](#why-this-exists)
+- [Features](#features)
+- [Architecture](#architecture)
+  - [Engineering decisions](#engineering-decisions)
+  - [Module map](#module-map)
+  - [Project structure](#project-structure)
+- [Tech stack](#tech-stack)
+- [Getting started](#getting-started)
+- [Building standalone](#building-standalone)
+- [Roadmap](#roadmap)
+- [What's deliberately not here](#whats-deliberately-not-here)
+
+</details>
+
 ## Why this exists
 
 Every KMP + Compose Multiplatform module ends up re-declaring the same boilerplate: apply Kotlin
 Multiplatform, apply the AGP KMP-library plugin, declare the iOS targets, wire the Compose compiler,
-pull in the same Koin/lifecycle/navigation baseline for feature modules. Copy-pasting that across
-modules — or across *repos* — is exactly the kind of drift a convention plugin exists to kill.
+pull in the same Koin/test/quality baseline for every module. Copy-pasting that across modules — or
+across *repos* — is exactly the kind of drift a convention plugin exists to kill.
 
-This repo extracts that shared surface out of two production KMP codebases into a standalone,
-independently-buildable Gradle composite build: five convention plugins under a neutral `shared.*`
-prefix, plus the Compose-compiler-metrics wiring they share. Anything that genuinely diverged between
-the source repos (Android-only library defaults, repo-specific desktop/watchOS targets) was left out
-on purpose — see [What's deliberately not here](#whats-deliberately-not-here).
+This repo extracts that shared surface out of production KMP codebases into a standalone,
+independently-buildable Gradle composite build: 14 convention plugins under a neutral `shared.*`
+prefix, plus the Compose-compiler-metrics wiring several of them share. It's consumed today by
+[**Mileway**](https://github.com/darkpandawarrior/Mileway) and
+[**PaymentsLab**](https://github.com/darkpandawarrior/PaymentsLab) via `includeBuild`, so the
+Kotlin/AGP/Compose/quality setup isn't hand-copied per project. Anything that genuinely diverges
+between consumers (app-specific flavor lists, repo-specific desktop/watchOS targets) was left out on
+purpose — see [What's deliberately not here](#whats-deliberately-not-here).
 
-## Plugin map
+## Features
 
-| Plugin ID | Class | Configures |
+| Area | Plugin ID | Configures |
 |---|---|---|
-| `shared.kmp.library` | `SharedKmpLibraryConventionPlugin` | Kotlin Multiplatform + AGP KMP-library plugins, `iosArm64()` + `iosSimulatorArm64()` targets |
-| `shared.kmp.compose` | `SharedKmpComposeConventionPlugin` | `shared.kmp.library` + Compose Multiplatform + Compose compiler plugins, Compose-metrics wiring |
-| `shared.cmp.feature` | `SharedCmpFeatureConventionPlugin` | `shared.kmp.compose` + the standard feature-module dep set (Compose runtime/UI/Material3, Koin, JetBrains navigation-compose, lifecycle-viewmodel, kotlinx-datetime) in `commonMain`/`androidMain` |
-| `shared.test` | `SharedTestConventionPlugin` | JVM unit-test stack on `testImplementation`: JUnit, MockK, coroutines-test, Turbine, Koin-test |
-| `shared.android.application` | `SharedAndroidApplicationConventionPlugin` | AGP application + Compose-compiler plugins, `compileSdk 37` / Java 21 / Compose enabled (`buildConfig` off by default) |
+| **KMP chain** | `shared.kmp.library` | Kotlin Multiplatform + AGP KMP-library plugins, `iosArm64()` + `iosSimulatorArm64()` |
+| | `shared.kmp.compose` | `shared.kmp.library` + Compose Multiplatform + Compose compiler plugins, Compose-metrics wiring |
+| | `shared.cmp.feature` | `shared.kmp.compose` + the standard feature-module dep set (Compose runtime/UI/Material3, Koin, JetBrains navigation-compose, lifecycle-viewmodel, kotlinx-datetime) |
+| | `shared.kmp.pure` | Kotlin Multiplatform only — `jvm()`, `iosArm64()`, `iosSimulatorArm64()`, `wasmJs { browser(); nodejs() }` — for platform-SDK-free leaf modules |
+| **Android** | `shared.android.application` | AGP application + Compose-compiler plugins, `compileSdk 37` / Java 21 / Compose enabled |
+| | `shared.android.library` | AGP library + Compose-compiler plugins for an Android-only leaf module, `compileSdk 37` / `minSdk 24` / Java 21, single "release" variant with sources |
+| **Testing** | `shared.test` | JVM unit-test stack on `testImplementation`: JUnit, MockK, coroutines-test, Turbine, Koin-test |
+| **Quality** | `shared.detekt` | Detekt 2.x static analysis, `buildUponDefaultConfig`, `detekt-formatting` ruleset |
+| | `shared.ktlint` | ktlint Gradle plugin with defaults (alternative to `shared.spotless`) |
+| | `shared.spotless` | Spotless with ktlint-based Kotlin/Kotlin-script formatting |
+| | `shared.kover` | Kover coverage — root project configures filters/verify, every leaf self-registers into the aggregation |
+| **DI / data** | `shared.koin` | Koin core DI wired into `commonMain`/`commonTest` for non-Compose modules |
+| | `shared.room` | Room 3 (KMP) + KSP, schema export, runtime/compiler wired across Android + iOS targets |
+| **Flavors** | `shared.flavors` | `kmp-product-flavors` (Android-style product flavors for KMP) with build-type support |
 
-Every plugin that applies the Compose compiler (`shared.kmp.compose`, and transitively
-`shared.cmp.feature`, plus `shared.android.application` directly) also picks up
-`configureComposeCompilerMetrics()`: it always wires the *consumer's* rootProject
+Every plugin that applies the Compose compiler (`shared.kmp.compose` and transitively
+`shared.cmp.feature`, plus `shared.android.application`/`shared.android.library` directly) also
+picks up `configureComposeCompilerMetrics()`: it always wires the *consumer's* rootProject
 `compose_stability.conf` if present, and additionally emits Compose compiler metrics/stability
-reports under `build/compose-metrics` + `build/compose-reports` when the consumer build is run with
-`-Pcompose.metrics`. `shared.kmp.library` and `shared.test` never call it — neither applies a Compose
-compiler plugin, so there's no `ComposeCompilerGradlePluginExtension` for it to configure. See
-[`compose_stability.conf`](compose_stability.conf) in this repo for the template — copy it into your
-own project root and edit it.
+reports under `build/compose-metrics` + `build/compose-reports` when run with `-Pcompose.metrics`.
+See [`compose_stability.conf`](compose_stability.conf) in this repo for the template.
 
-## Plugin composition
+## Architecture
 
 ```mermaid
 graph LR
     subgraph chain["KMP chain — each builds on the one before it"]
-        KL["shared.kmp.library<br/>Kotlin Multiplatform +<br/>com.android.kotlin.multiplatform.library<br/>iosArm64() + iosSimulatorArm64()"]
-        KC["shared.kmp.compose<br/>+ org.jetbrains.compose<br/>+ org.jetbrains.kotlin.plugin.compose<br/>+ configureComposeCompilerMetrics()"]
-        CF["shared.cmp.feature<br/>+ Compose runtime/ui/material3/icons<br/>+ Koin, nav-compose, lifecycle-viewmodel,<br/>kotlinx-datetime — resolved from the<br/>consumer's own libs.versions.toml"]
+        KL["shared.kmp.library"]
+        KC["shared.kmp.compose"]
+        CF["shared.cmp.feature"]
         KL --> KC --> CF
     end
 
-    subgraph standalone["Independent — no chain"]
-        T["shared.test<br/>JUnit, MockK, coroutines-test,<br/>Turbine, Koin-test<br/>(each alias optional, skipped if absent)"]
-        AA["shared.android.application<br/>com.android.application +<br/>org.jetbrains.kotlin.plugin.compose<br/>compileSdk 37, Java 21, Compose on<br/>+ configureComposeCompilerMetrics()"]
+    subgraph standalone["Independent plugins — no chain"]
+        KP["shared.kmp.pure"]
+        AA["shared.android.application"]
+        AL["shared.android.library"]
+        T["shared.test"]
+        DTK["shared.detekt"]
+        KTL["shared.ktlint"]
+        SPL["shared.spotless"]
+        KOV["shared.kover"]
+        KOI["shared.koin"]
+        RM["shared.room"]
+        FL["shared.flavors"]
     end
 ```
+
+### Engineering decisions
+
+| Decision | Why | Trade-off |
+|---|---|---|
+| Binary plugins (`kotlin-dsl` + explicit `gradlePlugin { plugins { register(...) } }`), not precompiled script plugins | Real KDoc, an explicit `apply(target: Project)` body, and a plugin ID independent of the file name | More boilerplate per plugin than a `foo.gradle.kts` auto-mapped ID |
+| Version-catalog lookups inside plugin code go through `VersionCatalogsExtension.findLibrary(...)` reflectively, not the generated `libs.xyz` DSL | Type-safe `libs.foo` accessors don't exist for a binary plugin class compiled before Gradle knows which project it applies to | Alias typos surface at configuration time (`NoSuchElementException`), not compile time |
+| Plugin-classpath deps (`libs.android.gradlePlugin`, etc.) are `compileOnly`, never `implementation` | Avoids the same plugin class being loaded by two classloaders at two versions — that surfaces as a `ClassCastException` at apply-time, not a build-script error | Every convention plugin author has to remember `compileOnly` |
+| `shared.kmp.library` applies AGP's `com.android.kotlin.multiplatform.library`, not classic `com.android.library` | AGP 9's purpose-built plugin for an Android target inside a `kotlin { }` block has multiplatform source-set awareness the classic plugin lacks | As of AGP 9.4.0-alpha03 it has no assets-packaging support — `shared.kmp.compose` carries a documented workaround (`configureComposeResourcesAndroidAssetsWorkaround`) until upstream fixes it |
+| `gradle/libs.versions.toml` is *not* re-declared in `settings.gradle.kts` | The file already sits at Gradle's conventional path, so Gradle auto-registers it — an explicit `versionCatalogs { create("libs") { from(...) } }` block fails with "Multiple `from` invocations" | Differs from consumer repos whose catalog lives one directory up, where the explicit block is required |
+
+### Module map
+
+| Module | Contents |
+|---|---|
+| `:convention` | The only module in this composite build — 14 `Plugin<Project>` classes + `ComposeMetrics.kt`, registered via `gradlePlugin { plugins { ... } }` in `convention/build.gradle.kts` |
+
+### Project structure
+
+```
+kmp-build-logic/
+├── convention/
+│   ├── build.gradle.kts          # kotlin-dsl + gradlePlugin{} registrations
+│   └── src/main/kotlin/
+│       ├── ComposeMetrics.kt                          # shared metrics/stability helper (not a plugin)
+│       ├── SharedKmpLibraryConventionPlugin.kt
+│       ├── SharedKmpComposeConventionPlugin.kt
+│       ├── SharedCmpFeatureConventionPlugin.kt
+│       ├── SharedKmpPureConventionPlugin.kt
+│       ├── SharedAndroidApplicationConventionPlugin.kt
+│       ├── SharedAndroidLibraryConventionPlugin.kt
+│       ├── SharedTestConventionPlugin.kt
+│       ├── SharedDetektConventionPlugin.kt
+│       ├── SharedKtlintConventionPlugin.kt
+│       ├── SharedSpotlessConventionPlugin.kt
+│       ├── SharedKoverConventionPlugin.kt
+│       ├── SharedKoinConventionPlugin.kt
+│       ├── SharedRoomConventionPlugin.kt
+│       └── SharedFlavorsConventionPlugin.kt
+├── gradle/libs.versions.toml     # plugin-classpath coordinates only (compileOnly)
+├── compose_stability.conf        # template — copy into a consumer's root
+└── settings.gradle.kts
+```
+
+## Tech stack
+
+| Layer | Version |
+|---|---|
+| Kotlin | 2.4.20-Beta1 |
+| Android Gradle Plugin | 9.4.0-alpha04 |
+| Compose Multiplatform | 1.12.0-beta01 |
+| Gradle | 9.6.1 |
+| Detekt | 2.0.0-alpha.5 |
+| ktlint-gradle | 14.2.0 |
+| Spotless | 8.8.0 |
+| Kover | 0.9.8 |
+| Room (KMP) | 3.0.0 |
+| KSP | 2.3.10 |
+| kmp-product-flavors | 2.8.3 |
+| JDK | 21 (resolved automatically via the foojay toolchain resolver if not installed) |
 
 ## Getting started
 
@@ -99,22 +200,10 @@ android {
 }
 ```
 
-`shared.cmp.feature` and `shared.test` resolve their library dependencies from **your own** version
-catalog (`libs`) via `VersionCatalogsExtension.findLibrary(...)`, so your project's
-`gradle/libs.versions.toml` must define the aliases they reference — see the plugin map above and
-each plugin's KDoc for the exact alias names. (`shared.kmp.compose` itself only applies Gradle
-plugins — Compose Multiplatform + the Compose compiler — it never touches the version catalog;
-catalog resolution only happens in `shared.cmp.feature`, which builds on top of it.)
-
-## Tech stack
-
-| Layer | Version |
-|---|---|
-| Kotlin | 2.4.0 |
-| Android Gradle Plugin | 9.2.1 |
-| Compose Multiplatform | 1.11.1 |
-| Gradle | 9.6.1 |
-| JDK | 21 (resolved automatically via the foojay toolchain resolver if not installed) |
+Plugins that look up dependencies from a version catalog (`shared.cmp.feature`, `shared.test`,
+`shared.koin`, `shared.room`) resolve those aliases from **your own**
+`gradle/libs.versions.toml` via `VersionCatalogsExtension.findLibrary(...)` — see the
+[Features](#features) table and each plugin's KDoc for the exact alias names it expects.
 
 ## Building standalone
 
@@ -123,86 +212,38 @@ This repo is a self-contained composite build with no consumer project required:
 ```bash
 git clone https://github.com/darkpandawarrior/kmp-build-logic.git
 cd kmp-build-logic
-./gradlew build
+./gradlew :convention:validatePlugins :convention:assemble
 ```
 
-## Technical deep dive
+That's also the exact command CI runs (`.github/workflows/ci.yml`).
 
-- **Binary plugins, not precompiled script plugins.** `convention/build.gradle.kts` applies
-  `kotlin-dsl` and registers each plugin explicitly:
-  ```kotlin
-  gradlePlugin {
-      plugins {
-          register("kmpLibrary") {
-              id = "shared.kmp.library"
-              implementationClass = "SharedKmpLibraryConventionPlugin"
-          }
-          // ...
-      }
-  }
-  ```
-  That's a deliberate choice over the *other* common convention-plugin style — precompiled script
-  plugins, where a `foo.gradle.kts` file's name is auto-mapped to a plugin ID by the `kotlin-dsl`
-  plugin with no explicit registration. Hand-written `Plugin<Project>` classes under
-  `src/main/kotlin` (e.g. [`SharedKmpLibraryConventionPlugin.kt`](convention/src/main/kotlin/SharedKmpLibraryConventionPlugin.kt))
-  give each plugin real KDoc, an explicit `apply(target: Project)` body, and an ID that's
-  independent of the file name.
+## Roadmap
 
-- **Version-catalog access from plugin code is reflective, not the `libs.xyz` DSL.** Inside a
-  module's own `build.gradle.kts`, Gradle generates type-safe `libs.foo` accessors for the version
-  catalog. Those accessors don't exist for a binary plugin living in an included build — its class
-  is compiled before Gradle knows which project it'll be applied to. So
-  [`SharedCmpFeatureConventionPlugin`](convention/src/main/kotlin/SharedCmpFeatureConventionPlugin.kt)
-  and [`SharedTestConventionPlugin`](convention/src/main/kotlin/SharedTestConventionPlugin.kt) look
-  the catalog up at apply-time instead:
-  ```kotlin
-  val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
-  libs.findLibrary("koin.core").get()
-  ```
-  `shared.cmp.feature` calls `.get()` — a missing alias in the consumer's catalog throws
-  `NoSuchElementException` at configuration time, by design (its KDoc lists every alias it requires).
-  `shared.test` instead wraps each lookup in `.ifPresent { ... }`, so a consumer that doesn't declare
-  `turbine` or `koin-test` in its catalog just doesn't get that `testImplementation` line, rather than
-  failing the build — see [`SharedTestConventionPlugin.kt`](convention/src/main/kotlin/SharedTestConventionPlugin.kt).
+**Shipped**
+- [x] KMP chain: `shared.kmp.library` → `shared.kmp.compose` → `shared.cmp.feature`, plus standalone `shared.kmp.pure`
+- [x] Android application + Android-only library conventions
+- [x] Quality stack: `shared.detekt`, `shared.ktlint`, `shared.spotless`, `shared.kover`
+- [x] DI/data: `shared.koin`, `shared.room`
+- [x] `shared.flavors` (kmp-product-flavors integration)
+- [x] Compose compiler metrics/stability wiring shared across every Compose-applying plugin
+- [x] CI: plugin validation + assemble, plus a commit-message AI-attribution guard
 
-- **`compileOnly` for the plugin classpath, on purpose.** `convention/build.gradle.kts` depends on
-  `libs.android.gradlePlugin`, `libs.kotlin.gradlePlugin`, etc. as `compileOnly`, not
-  `implementation` — the inline comment spells out why: using `implementation` risks the *same*
-  plugin class being loaded by two different classloaders at two different versions (the version this
-  build compiles against vs. the version already on the consumer's classpath), which surfaces as a
-  `ClassCastException` at apply-time rather than a build-script error.
-
-- **`shared.kmp.library` applies AGP's dedicated KMP-library plugin, not the classic one.**
-  [`SharedKmpLibraryConventionPlugin.kt`](convention/src/main/kotlin/SharedKmpLibraryConventionPlugin.kt)
-  applies `com.android.kotlin.multiplatform.library` — AGP 9's purpose-built plugin for an
-  Android-target inside a `kotlin { }` multiplatform block — rather than the classic
-  `com.android.library`, which has no multiplatform source-set awareness.
-
-- **The version catalog is deliberately *not* re-declared in `settings.gradle.kts`.** A comment there
-  explains why: this repo's `gradle/libs.versions.toml` already sits at Gradle's conventional path, so
-  Gradle auto-registers it as the `libs` catalog. Adding an explicit
-  `versionCatalogs { create("libs") { from(...) } }` block — as you'd need if the file lived at a
-  non-default path (e.g. one directory level up, the shape used by the two donor repos this build
-  logic was extracted from) — fails the build here with a "Multiple `from` invocations" error,
-  because the implicit registration already claimed the catalog name.
-
-## Version history
-
-No git tags exist yet (`git tag --sort=-creatordate` returns nothing) — nothing below is a release,
-just the commit history to date:
-
-| Date | Commit | Summary |
-|---|---|---|
-| 2026-07-05 | `f39742e` | `feat:` initial extraction — the five `shared.*` convention plugins + Compose-metrics wiring |
-| 2026-07-06 | `f05fe2c` | `chore:` added the commit-message + CI guard against AI-attribution lines |
-
-The repo does carry a `VERSION` file pinned at `1.0.0` and a `BUILD_NUMBER` at `1`, but neither has a
-matching git tag cut yet — treat those as pre-declared, not as a shipped release.
+**Exploring**
+- [ ] `shared.android.library` variants for consumers needing more than a single "release" variant
+- [ ] A third consumer beyond Mileway/PaymentsLab to pressure-test the version-catalog-alias contract further
 
 ## What's deliberately not here
 
-- **`AndroidLibraryConventionPlugin`** — genuinely diverges between the two source repos
-  (`minSdk`/Java target differ), so it stays local to each consumer instead of being papered over.
 - **`AndroidProviderConventionPlugin`, `KmpLibraryWatchosConventionPlugin`, `KmpDesktopConventionPlugin`**
   — repo-specific targets (a payment-provider module shape, watchOS, JVM desktop) out of scope for a
-  shared surface two arbitrary KMP projects would both want.
+  shared surface arbitrary KMP projects would both want.
+- **App-specific flavor dimensions/build types** — `shared.flavors` wires the plugin, but the actual
+  flavors are left to each consuming app, since Mileway and PaymentsLab have divergent products.
+
+---
+
+<div align="center">
+
+**Portfolio:** [cv-siddharth.vercel.app](https://cv-siddharth.vercel.app/) &nbsp;·&nbsp; **Consumers:** [Mileway](https://github.com/darkpandawarrior/Mileway) &nbsp;·&nbsp; [PaymentsLab](https://github.com/darkpandawarrior/PaymentsLab)
+
+</div>
