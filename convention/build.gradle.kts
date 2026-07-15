@@ -28,6 +28,8 @@ dependencies {
     compileOnly(libs.room.gradlePlugin)
     compileOnly(libs.ksp.gradlePlugin)
     compileOnly(libs.kmpFlavors.gradlePlugin)
+    compileOnly(libs.googleServices.gradlePlugin)
+    compileOnly(libs.firebaseCrashlytics.gradlePlugin)
 }
 
 tasks.validatePlugins {
@@ -94,6 +96,14 @@ gradlePlugin {
         register("kmpPure") {
             id = "shared.kmp.pure"
             implementationClass = "SharedKmpPureConventionPlugin"
+        }
+        register("androidFirebase") {
+            id = "shared.android.firebase"
+            implementationClass = "SharedAndroidApplicationFirebaseConventionPlugin"
+        }
+        register("androidLint") {
+            id = "shared.android.lint"
+            implementationClass = "SharedAndroidLintConventionPlugin"
         }
     }
 }

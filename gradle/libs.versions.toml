@@ -9,6 +9,9 @@ kover = "0.9.8"
 room = "3.0.0"
 ksp = "2.3.10"
 kmpFlavors = "2.8.3"
+googleServices = "4.5.0"
+firebaseCrashlyticsPlugin = "3.0.7"
+firebaseBom = "34.16.0"
 
 [libraries]
 # Gradle-plugin artifacts the convention plugins apply programmatically (compileOnly in convention/build.gradle.kts)
@@ -29,3 +32,13 @@ detekt-formatting = { module = "dev.detekt:detekt-rules-ktlint-wrapper", version
 room-gradlePlugin = { module = "androidx.room3:room3-gradle-plugin", version.ref = "room" }
 ksp-gradlePlugin = { module = "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
 kmpFlavors-gradlePlugin = { module = "io.github.mobilebytelabs.kmpflavors:flavor-plugin", version.ref = "kmpFlavors" }
+# Firebase Gradle-plugin artifacts applied programmatically by SharedAndroidApplicationFirebaseConventionPlugin
+# (compileOnly in convention/build.gradle.kts — same ClassCastException-avoidance reason as the artifacts above).
+googleServices-gradlePlugin = { module = "com.google.gms:google-services", version.ref = "googleServices" }
+firebaseCrashlytics-gradlePlugin = { module = "com.google.firebase:firebase-crashlytics-gradle", version.ref = "firebaseCrashlyticsPlugin" }
+# Firebase runtime BOM + libraries wired by the firebase convention plugin. Looked up from the *consuming*
+# project's own version catalog at apply-time (findLibrary(...).ifPresent {}, same pattern as
+# SharedRoomConventionPlugin) — these entries document the coordinates/versions the family standardises on.
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
