@@ -97,6 +97,10 @@ gradlePlugin {
             id = "shared.kmp.pure"
             implementationClass = "SharedKmpPureConventionPlugin"
         }
+        register("purity") {
+            id = "shared.purity"
+            implementationClass = "SharedPurityConventionPlugin"
+        }
         register("androidFirebase") {
             id = "shared.android.firebase"
             implementationClass = "SharedAndroidApplicationFirebaseConventionPlugin"
