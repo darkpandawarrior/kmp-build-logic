@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/banner.svg" alt="kmp-build-logic" width="700"/>
+<img src="docs/assets/banner.gif" alt="kmp-build-logic" width="700"/>
 
 ### Shared Gradle convention plugins for Kotlin Multiplatform + Compose Multiplatform projects — write the module config once, apply it with one line everywhere.
 
