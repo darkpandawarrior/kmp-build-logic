@@ -13,6 +13,8 @@ googleServices = "4.5.0"
 firebaseCrashlyticsPlugin = "3.0.7"
 firebaseBom = "34.16.0"
 
+dokka = "2.2.0"
+
 [libraries]
 # Gradle-plugin artifacts the convention plugins apply programmatically (compileOnly in convention/build.gradle.kts)
 android-gradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -42,3 +44,7 @@ firebaseCrashlytics-gradlePlugin = { module = "com.google.firebase:firebase-cras
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
+
+[plugins]
+# API docs for the convention plugins — the most load-bearing, least documented code in the family.
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

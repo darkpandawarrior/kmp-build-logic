@@ -1,0 +1,53 @@
+name: API docs
+
+# Builds the Dokka site for the convention plugins. On main it publishes to GitHub Pages; on a PR it
+# only builds, so a change that breaks doc generation fails review rather than the deploy.
+#
+# Requires Pages to be enabled once, with Settings -> Pages -> Source = "GitHub Actions". Until then
+# the build-docs job still passes and the deploy job is the only thing that fails.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Not cancel-in-progress on main: a cancelled deploy can leave Pages half-updated.
+  group: api-docs-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+      - name: Generate API docs
+        run: ./gradlew :convention:dokkaGeneratePublicationHtml --stacktrace
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: convention/build/dokka/html
+
+  deploy-docs:
+    needs: build-docs
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
