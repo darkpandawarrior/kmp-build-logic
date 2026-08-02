@@ -1,5 +1,11 @@
 plugins {
     `kotlin-dsl`
+    // API docs for the convention plugins. These are the most load-bearing and least documented
+    // code in the family — every app and the toolkit configure themselves through them, and their
+    // traps (a manual dependsOn silently disabling applyDefaultHierarchyTemplate; the AGP9
+    // compose-resources workaround being assets-only) are discoverable today only by reading the
+    // source. Generated site: convention/build/dokka/html.
+    alias(libs.plugins.dokka)
 }
 
 group = "com.siddharth.kmp.buildlogic"
