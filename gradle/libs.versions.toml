@@ -1,17 +1,17 @@
 [versions]
-agp = "9.4.0-alpha07"
-kotlin = "2.4.20-Beta2"
-compose-multiplatform = "1.12.0-beta03"
+agp = "9.4.0-alpha08"
+kotlin = "2.4.20-RC"
+compose-multiplatform = "1.12.0-rc01"
 detekt = "2.0.0-alpha.5"
 ktlint = "14.2.0"
 spotlessVersion = "8.8.0"
 kover = "0.9.8"
 room = "3.0.0"
-ksp = "2.3.10"
+ksp = "2.3.11"
 kmpFlavors = "2.8.3"
 googleServices = "4.5.0"
 firebaseCrashlyticsPlugin = "3.0.7"
-firebaseBom = "34.16.0"
+firebaseBom = "34.17.0"
 
 dokka = "2.2.0"
 
