@@ -2,7 +2,7 @@
 agp = "9.4.0-alpha08"
 kotlin = "2.4.20-RC"
 compose-multiplatform = "1.12.0-rc01"
-detekt = "2.0.0-alpha.5"
+detekt = "2.0.0-alpha.6"
 ktlint = "14.2.0"
 spotlessVersion = "8.8.0"
 kover = "0.9.8"
