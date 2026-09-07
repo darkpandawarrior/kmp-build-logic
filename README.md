@@ -14,7 +14,7 @@
 
 **[Why](#why-this-exists)** · **[Features](#features)** · **[Architecture](#architecture)** · **[Tech stack](#tech-stack)** · **[Getting started](#getting-started)** · **[Roadmap](#roadmap)**
 
-**Portfolio:** [cv-siddharth.vercel.app](https://cv-siddharth.vercel.app/) &nbsp;·&nbsp; **Consumers:** [Mileway](https://github.com/darkpandawarrior/Mileway) &nbsp;·&nbsp; [PaymentsLab](https://github.com/darkpandawarrior/PaymentsLab) &nbsp;·&nbsp; [kmp-toolkit](https://github.com/darkpandawarrior/kmp-toolkit) &nbsp;·&nbsp; [HireSignal](https://github.com/darkpandawarrior/HireSignal) &nbsp;·&nbsp; [Kursi](https://github.com/darkpandawarrior/Kursi)
+**Portfolio:** [cv-siddharth.vercel.app](https://cv-siddharth.vercel.app/) &nbsp;·&nbsp; **Consumers:** [Doori](https://github.com/darkpandawarrior/Doori) &nbsp;·&nbsp; [PaymentsLab-KMP](https://github.com/darkpandawarrior/PaymentsLab-KMP) &nbsp;·&nbsp; [kmp-toolkit](https://github.com/darkpandawarrior/kmp-toolkit) &nbsp;·&nbsp; [Candidai](https://github.com/darkpandawarrior/Candidai) &nbsp;·&nbsp; [Gaddi](https://github.com/darkpandawarrior/Gaddi) &nbsp;·&nbsp; [kmp-app-template](https://github.com/darkpandawarrior/kmp-app-template)
 
 </div>
 
@@ -39,8 +39,8 @@
 
 > **At a glance**, **17 convention plugins** (KMP chain · Android · testing · quality · DI/data ·
 > flavors · Firebase · lint · purity) under one neutral `shared.*` prefix, `:convention`-only
-> composite build, consumed today by **5 sibling repos**: Mileway, PaymentsLab, kmp-toolkit,
-> HireSignal and Kursi.
+> composite build, consumed today by **6 sibling repos**: Doori, PaymentsLab-KMP, kmp-toolkit,
+> Candidai, Gaddi and kmp-app-template.
 
 ## Why this exists
 
@@ -53,14 +53,15 @@ This repo extracts that shared surface out of production KMP codebases into a st
 independently-buildable Gradle composite build: 17 convention plugins under a neutral `shared.*`
 prefix, plus the Compose-compiler-metrics wiring several of them share. It's vendored as a git
 submodule (`external/kmp-build-logic`) and pulled in via `pluginManagement { includeBuild(...) }` by
-[**Mileway**](https://github.com/darkpandawarrior/Mileway),
-[**PaymentsLab**](https://github.com/darkpandawarrior/PaymentsLab),
-[**kmp-toolkit**](https://github.com/darkpandawarrior/kmp-toolkit),
-[**HireSignal**](https://github.com/darkpandawarrior/HireSignal) and
-[**Kursi**](https://github.com/darkpandawarrior/Kursi), so the Kotlin/AGP/Compose/quality setup
-isn't hand-copied per project. Anything that genuinely diverges between consumers (app-specific
-flavor lists, repo-specific desktop/watchOS targets) was left out on purpose, see
-[What's deliberately not here](#whats-deliberately-not-here).
+[**Doori**](https://github.com/darkpandawarrior/Doori),
+[**PaymentsLab-KMP**](https://github.com/darkpandawarrior/PaymentsLab-KMP),
+[**kmp-toolkit**](https://github.com/darkpandawarrior/kmp-toolkit) (currently at `2.0.0`),
+[**Candidai**](https://github.com/darkpandawarrior/Candidai),
+[**Gaddi**](https://github.com/darkpandawarrior/Gaddi) and
+[**kmp-app-template**](https://github.com/darkpandawarrior/kmp-app-template), so the
+Kotlin/AGP/Compose/quality setup isn't hand-copied per project. Anything that genuinely diverges
+between consumers (app-specific flavor lists, repo-specific desktop/watchOS targets) was left out
+on purpose, see [What's deliberately not here](#whats-deliberately-not-here).
 
 ## Features
 
@@ -171,20 +172,20 @@ kmp-build-logic/
 
 | Layer | Version |
 |---|---|
-| Kotlin | 2.4.20-Beta1 |
-| Android Gradle Plugin | 9.4.0-alpha04 |
-| Compose Multiplatform | 1.12.0-beta01 |
-| Gradle | 9.6.1 |
-| Detekt | 2.0.0-alpha.5 |
+| Kotlin | 2.4.20-RC |
+| Android Gradle Plugin | 9.5.0-alpha02 |
+| Compose Multiplatform | 1.12.0-rc01 |
+| Gradle | 9.7.0 |
+| Detekt | 2.0.0-alpha.6 |
 | ktlint-gradle | 14.2.0 |
 | Spotless | 8.8.0 |
 | Kover | 0.9.8 |
-| Room (KMP) | 3.0.0 |
-| KSP | 2.3.10 |
+| Room (KMP) | 3.0.2 |
+| KSP | 2.3.11 |
 | kmp-product-flavors | 2.8.3 |
 | google-services | 4.5.0 |
-| firebase-crashlytics (Gradle plugin) | 3.0.7 |
-| Firebase BOM | 34.16.0 |
+| firebase-crashlytics (Gradle plugin) | 3.0.8 |
+| Firebase BOM | 34.18.0 |
 | JDK | 21 (resolved automatically via the foojay toolchain resolver if not installed) |
 
 ## Getting started
@@ -251,9 +252,10 @@ That's also the exact command CI runs (`.github/workflows/ci.yml`).
 - [x] `shared.android.firebase`, google-services + Crashlytics wiring, mapping-file upload
 - [x] Compose compiler metrics/stability wiring shared across every Compose-applying plugin
 - [x] CI: plugin validation + assemble, plus a commit-message AI-attribution guard
-- [x] Grew from 2 to 5 consumers (Mileway, PaymentsLab, kmp-toolkit, HireSignal, Kursi), including a
-      non-app library consumer (kmp-toolkit) and a shared-vendoring pattern (kmp-toolkit itself
-      pulled in as `external/kmp-toolkit` alongside `external/kmp-build-logic`)
+- [x] Grew from 2 to 6 consumers (Doori, PaymentsLab-KMP, kmp-toolkit, Candidai, Gaddi,
+      kmp-app-template), including a non-app library consumer (kmp-toolkit) and a shared-vendoring
+      pattern (kmp-toolkit itself pulled in as `external/kmp-toolkit` alongside
+      `external/kmp-build-logic`)
 
 **Exploring**
 - [ ] `shared.android.library` variants for consumers needing more than a single "release" variant
@@ -265,13 +267,13 @@ That's also the exact command CI runs (`.github/workflows/ci.yml`).
 repo-specific targets (a payment-provider module shape, watchOS, JVM desktop) out of scope for a
   shared surface arbitrary KMP projects would both want.
 - **App-specific flavor dimensions/build types**: `shared.flavors` wires the plugin, but the actual
-  flavors are left to each consuming app, since the app consumers (Mileway, PaymentsLab, HireSignal)
+  flavors are left to each consuming app, since the app consumers (Doori, PaymentsLab-KMP, Candidai)
   have divergent products and branding.
 
 ---
 
 <div align="center">
 
-**Portfolio:** [cv-siddharth.vercel.app](https://cv-siddharth.vercel.app/) &nbsp;·&nbsp; **Consumers:** [Mileway](https://github.com/darkpandawarrior/Mileway) &nbsp;·&nbsp; [PaymentsLab](https://github.com/darkpandawarrior/PaymentsLab) &nbsp;·&nbsp; [kmp-toolkit](https://github.com/darkpandawarrior/kmp-toolkit) &nbsp;·&nbsp; [HireSignal](https://github.com/darkpandawarrior/HireSignal) &nbsp;·&nbsp; [Kursi](https://github.com/darkpandawarrior/Kursi)
+**Portfolio:** [cv-siddharth.vercel.app](https://cv-siddharth.vercel.app/) &nbsp;·&nbsp; **Consumers:** [Doori](https://github.com/darkpandawarrior/Doori) &nbsp;·&nbsp; [PaymentsLab-KMP](https://github.com/darkpandawarrior/PaymentsLab-KMP) &nbsp;·&nbsp; [kmp-toolkit](https://github.com/darkpandawarrior/kmp-toolkit) &nbsp;·&nbsp; [Candidai](https://github.com/darkpandawarrior/Candidai) &nbsp;·&nbsp; [Gaddi](https://github.com/darkpandawarrior/Gaddi) &nbsp;·&nbsp; [kmp-app-template](https://github.com/darkpandawarrior/kmp-app-template)
 
 </div>
