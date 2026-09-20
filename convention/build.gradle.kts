@@ -63,6 +63,10 @@ gradlePlugin {
             id = "shared.test"
             implementationClass = "SharedTestConventionPlugin"
         }
+        register("kmpTest") {
+            id = "shared.kmp.test"
+            implementationClass = "SharedKmpTestConventionPlugin"
+        }
         register("androidApplication") {
             id = "shared.android.application"
             implementationClass = "SharedAndroidApplicationConventionPlugin"

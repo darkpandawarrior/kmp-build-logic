@@ -12,6 +12,11 @@ import org.gradle.kotlin.dsl.getByType
  * Apply with `id("shared.test")` on any module with a `src/test` JVM unit-test source set. Each
  * alias is looked up via [org.gradle.api.artifacts.VersionCatalog.findLibrary] and silently skipped
  * if the consumer's catalog doesn't define it, so this plugin never forces every alias to exist.
+ *
+ * **JVM/Android only.** `testImplementation` does not reach a multiplatform module's `commonTest`,
+ * so on a KMP module this plugin leaves `iosArm64Test` / `iosSimulatorArm64Test` with no test stack
+ * and nothing fails to say so. Use [SharedKmpTestConventionPlugin] (`id("shared.kmp.test")`) for
+ * those, or both when a module needs JUnit/MockK on the JVM side as well.
  */
 class SharedTestConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
