@@ -1,0 +1,409 @@
+# =============================================================================
+# config/detekt/detekt.yml — the family standard.
+# Canonical copy: /Users/darkpandawarrior/Repos/KMP/kmp-toolkit/config/detekt/detekt.yml
+# Copy verbatim into all nine repos. Ghar/app, kmp-build-logic and kmp-app-template
+# have no detekt.yml today and must get one; they currently run on detekt defaults.
+#
+# Toolchain: dev.detekt 2.0.0-alpha.6 (NOT io.gitlab.arturbosch.detekt 1.x).
+# Every option name below was checked against default-detekt-config.yml inside
+# detekt-core-2.0.0-alpha.6.jar. Rules that only exist in 1.x (UnusedPrivateMember,
+# MayBeConst) are deliberately absent.
+#
+# HOW TO READ THE EXCLUSIONS
+#   Every `excludes:` and every `active: false` below carries the reason it is an
+#   artefact. Adding one without a reason creates next year's mystery.
+#
+# THE TRAP THAT MAKES THIS FILE FRAGILE
+#   detekt's `excludes:` REPLACES the built-in default list, it does not extend it.
+#   Mileway's config already records getting burned by this: omitting the test globs
+#   from naming.FunctionNaming turned every backtick-named test function into a
+#   violation. So the *notOurs anchor below re-lists detekt 2.0's defaults IN FULL,
+#   plus the KMP test source sets detekt ships no default for but this family targets
+#   (desktopTest, wasmJsTest, watchosTest, appleTest, nativeTest).
+#   The YAML anchor is deliberate: sixteen globs repeated across ten rules WILL drift,
+#   and a silently-wrong excludes list silently disables a rule. Anchor once, alias
+#   everywhere. (Verified: SnakeYAML expands these before detekt's config validation
+#   runs, so `config.validation: true` stays on.)
+# =============================================================================
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+# -----------------------------------------------------------------------------
+comments:
+  # KDoc-on-everything produces noise, not documentation, in a UI-heavy codebase.
+  # Carried forward from Mileway/HireSignal unchanged — this one was always right.
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
+  UndocumentedPublicProperty:
+    active: false
+
+# -----------------------------------------------------------------------------
+complexity:
+  CyclomaticComplexMethod:
+    # ARTEFACT (38 findings): Room's KSP output. A generated *Dao_Impl.query() with a
+    # branch per nullable column is machine-written; nobody can refactor it.
+    # The full glob list lives here once and is aliased as *notOurs below.
+    excludes: &notOurs
+      - '**/build/generated/**'   # KSP/Room/Compose-resources output. 4,150 of the family's
+                                  # 6,307 baselined findings are in here. Nobody wrote these
+                                  # names, nobody can change them, and regenerating rewrites
+                                  # them identically after every clean.
+      # --- detekt 2.0's own defaults, restored verbatim. Do not drop any of these. ---
+      - '**/test/**'
+      - '**/androidTest/**'
+      - '**/commonTest/**'
+      - '**/jvmTest/**'
+      - '**/androidUnitTest/**'
+      - '**/androidInstrumentedTest/**'
+      - '**/jsTest/**'
+      - '**/iosTest/**'
+      # --- KMP source sets this family targets that detekt 2.0 ships no default for. ---
+      - '**/desktopTest/**'
+      - '**/wasmJsTest/**'
+      - '**/watchosTest/**'
+      - '**/appleTest/**'
+      - '**/nativeTest/**'
+      - '**/*.kts'                # Gradle scripts are configuration, not application logic.
+    allowedComplexity: 20         # Kursi/PaymentsLab/toolkit already at 20; Mileway was 15.
+                                  # 20 is the family number: game-rule and payment-orchestration
+                                  # state machines are legitimately branchy.
+    ignoreSimpleWhenEntries: true # A `when` over a sealed UiState is ONE decision expressed in
+                                  # N arms, not N decisions. Honest reading of the metric, not
+                                  # a loophole.
+  LongMethod:
+    excludes: *notOurs            # ARTEFACT: generated Compose resource accessors declare
+                                  # 100-line _collectCommonMainString0Resources functions.
+                                  # Mileway already had this exclusion on this one rule; it is
+                                  # now on every rule that needs it.
+    allowedLines: 80
+    ignoreAnnotated: &composable
+      # Both forms on purpose. detekt's per-source-set KMP tasks run WITHOUT type resolution,
+      # so FQN matching is not guaranteed; detekt's own Compose guide uses the simple name.
+      # Listing both costs nothing and removes the doubt.
+      - 'Composable'
+      - 'androidx.compose.runtime.Composable'
+  LongParameterList:
+    excludes: *notOurs
+    allowedFunctionParameters: 10      # A Compose entry point takes host + nav callbacks +
+    allowedConstructorParameters: 10   # modifier + VM default. PaymentsLab's 10 is the realistic
+    ignoreDefaultParameters: true      # number; a parameter with a default is not a burden on
+    ignoreAnnotated: *composable       # the caller, so it should not count.
+  TooManyFunctions:
+    excludes: *notOurs
+    allowedFunctionsPerFile: 40
+    allowedFunctionsPerClass: 20
+    allowedFunctionsPerInterface: 15
+    allowedFunctionsPerObject: 20
+    allowedFunctionsPerEnum: 10
+    ignoreAnnotatedFunctions:
+      # ARTEFACT (78 findings, e.g. Mileway CoreUiPreviews.kt, LoadingAndIndicators.kt,
+      # CompassGaugeHero.kt). A file holding thirty composables is a component catalogue;
+      # a file holding thirty previews is a preview sheet. Neither is a god class, and the
+      # metric measures the wrong thing on them. Prescribed by detekt's own Compose guide:
+      # https://detekt.dev/docs/introduction/compose/
+      # This does NOT rubber-stamp the rule: Kursi's five hits (AppPrefs, GameSession, Engine,
+      # SocialDirector, KursiVoice) are real classes and survive. They are debt.
+      - 'Composable'
+      - 'Preview'
+  LargeClass:
+    excludes: *notOurs            # ARTEFACT (8): a generated *Dao_Impl for a 20-column entity
+                                  # is mechanically large.
+  NestedBlockDepth:
+    excludes: *notOurs
+
+# -----------------------------------------------------------------------------
+coroutines:
+  # Promoted from the Kursi/toolkit/cv lineage to the whole family. These catch real
+  # structured-concurrency bugs and cost nothing — Mileway, HireSignal and PaymentsLab
+  # were simply never given them.
+  active: true
+  GlobalCoroutineUsage:
+    active: true
+  RedundantSuspendModifier:
+    active: true
+  SuspendFunWithFlowReturnType:
+    active: true
+
+# -----------------------------------------------------------------------------
+empty-blocks:
+  EmptyFunctionBlock:
+    excludes: *notOurs
+    ignoreOverridden: true
+    # ARTEFACT (36 findings, all of them). Every hit is an `override fun x() {}`:
+    # no-op test doubles (FakeShareSheet, FakeSpeechToText, FakeSavedTrackDao), unimplemented
+    # platform stubs (IosSpeechToText.stop, IosTextToSpeech), and listener adapters where only
+    # one callback of four is wanted (AndroidTextToSpeech's UtteranceProgressListener).
+    # For an override, the empty body IS the implementation. An empty NON-override — a function
+    # somebody forgot to finish — still fires, which is the case the rule was written for.
+
+# -----------------------------------------------------------------------------
+exceptions:
+  TooGenericExceptionCaught:
+    excludes: *notOurs
+    active: true
+    # DELIBERATELY OVERTURNING Mileway's and PaymentsLab's `active: false`.
+    # Mileway's recorded reason is "runCatching { } is idiomatic in this codebase".
+    # That reason does not hold: this rule fires on `catch` clauses, and runCatching {} has
+    # none — it returns a Result. It never triggered the rule. Mileway shows zero findings
+    # only because the rule is off, while Kursi (7), kmp-toolkit (13) and cv (2) run it on
+    # and carry 22 real `catch (e: Exception)` sites between them.
+    # Re-enabling WILL surface new findings in Mileway and PaymentsLab. They are genuine.
+    # Baselining them is not an option — see mustFixNotSuppress.
+    exceptionNames:
+      - 'ArrayIndexOutOfBoundsException'
+      - 'Error'
+      - 'Exception'
+      - 'IllegalMonitorStateException'
+      - 'NullPointerException'
+      - 'RuntimeException'
+      - 'Throwable'
+    allowedExceptionNameRegex: '_|(ignored)'
+  SwallowedException:
+    excludes: *notOurs
+    active: true                  # Overturns PaymentsLab's `active: false`. A swallowed
+                                  # exception in a payments orchestrator is the bug you get
+                                  # paged for; this is the last rule to turn off in this repo.
+  TooGenericExceptionThrown:
+    excludes: *notOurs
+    active: true
+
+# -----------------------------------------------------------------------------
+naming:
+  ClassNaming:
+    excludes: *notOurs
+    # ARTEFACT (82 findings, 100% of them). Every hit is `AgentDao_Impl : AgentDao`.
+    # Room's KSP contract is to name the generated implementation <Dao>_Impl; the underscore
+    # is Room's, not a style choice available to us.
+  VariableNaming:
+    excludes: *notOurs
+    # ARTEFACT (3,116 of 3,121 = 99.84%). Room's generated locals and fields:
+    # `private val __db: RoomDatabase`, `private val __insertAdapterOfAgentMessageEntity`,
+    # `val _columnIndexOfCreatedAtMs = getColumnIndexOrThrow(_stmt, "createdAtMs")`.
+    # The underscore convention is Room's, applied by KSP at build time.
+    # The 5 SURVIVORS ARE REAL and are NOT covered by this exclusion:
+    #   Mileway AdvanceHistoryScreen/AnalyticsHomeScreen/PayablesHomeScreen
+    #     `val MONTHS = arrayOf("Jan", ...)` — a local SCREAMING_SNAKE val, duplicated in three
+    #     screens and reallocated on every recomposition. Hoist to one `private val Months`.
+    #   cv-siddharth CvTheme.kt `val DisplayFamily = displayFamily`, `val MonoFamily = ...`
+  ConstructorParameterNaming:
+    excludes: *notOurs
+    # ARTEFACT (80 of 81). Generated `<Dao>_Impl(__db: RoomDatabase)` constructors.
+    # The 1 survivor is real: Mileway NetworkRequests.kt `EmptyRequest(val _empty: String? = null)`.
+  FunctionParameterNaming:
+    excludes: *notOurs
+    # ARTEFACT (10, all generated). Missing from the brief's list; it needs the same exclusion.
+  FunctionNaming:
+    excludes: *notOurs
+    ignoreAnnotated: *composable
+    functionPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    # Belt AND braces, on purpose. `ignoreAnnotated` is the precise instrument, but if the
+    # annotation fails to match under a per-source-set task running without type resolution,
+    # EVERY composable in the family becomes a violation at once. The permissive pattern is
+    # Mileway's proven fallback (2 findings family-wide with it in place). Keeping both makes
+    # the outcome independent of detekt's resolution mode.
+    # ARTEFACT this also covers: generated `_collectCommonMainString0Resources`.
+  TopLevelPropertyNaming:
+    excludes: *notOurs
+    constantPattern: '[A-Z][A-Za-z0-9]*'
+    # ARTEFACT (32 findings — I checked all 32, every one is PascalCase):
+    # `private const val BonusCap = 150`, TierWordStart, ForgeDamping, ForgeStiffness,
+    # FanoutScanPeriod, RecomposeCells, AmbientSkSl, LabStillSeconds.
+    # Compose's API guidelines specify PascalCase for top-level constants, which is why
+    # AndroidX's own Compose source reads this way; detekt's Compose guide prescribes exactly
+    # this pattern: https://detekt.dev/docs/introduction/compose/
+    # NOTE cv-siddharth already TRIED to fix this with '[A-Z][_A-Z0-9]*|[a-z][a-zA-Z0-9]*'.
+    # That alternation matches SCREAMING_SNAKE or camelCase and can never match PascalCase,
+    # which is why all 31 of its hits were still firing. A half-right pattern is worse than
+    # none: it looks handled.
+  MatchingDeclarationName:
+    active: false
+    # DELIBERATE IDIOM, not laziness (49 findings). This codebase groups small related
+    # declarations per file: ActionMomentOverlay.kt holds MomentHost, AppLocale.kt holds
+    # LocalAppLocale, CurrentLocationPinMap.kt holds LocationPin, Routing.kt holds StandingDto,
+    # GameMoments.kt holds SeatIdResolver.
+    # PaymentsLab already made this call AND matched it on the ktlint side
+    # (ktlint_standard_filename = disabled). Kursi/Mileway/toolkit/cv left the two tools
+    # disagreeing, which is where the 49 came from. This MUST stay paired with the
+    # .editorconfig line in ktlintStandard — one without the other just moves the noise.
+  InvalidPackageDeclaration:
+    excludes: *notOurs
+    active: true                  # 6 real hits (Mileway LedgerDirection.kt, PaperDirection.kt,
+                                  # SignalDirection.kt declare com.mileway.core.ui.theme from
+                                  # the wrong directory). Fix with `git mv`. Never baseline a
+                                  # package/directory mismatch — it breaks IDE navigation and
+                                  # symbol-level codegraph queries.
+
+# -----------------------------------------------------------------------------
+performance:
+  SpreadOperator:
+    active: false                 # Vararg spreading is idiomatic Kotlin at several engine and
+                                  # DI call sites; the array-copy cost the rule warns about is
+                                  # irrelevant at these call frequencies. 1 finding.
+  ForEachOnRange:
+    excludes: *notOurs
+    active: true                  # 3 real hits. `(0..n).forEach` allocates; `for (i in 0..n)`
+                                  # does not, and is not less readable.
+
+# -----------------------------------------------------------------------------
+style:
+  MagicNumber:
+    excludes: *notOurs
+    active: true
+    # NOT AN ARTEFACT RULE. Overturns PaymentsLab's `active: false` outright.
+    # 802 of the 1,975 findings are Room's generated column-index arithmetic and die with
+    # *notOurs. Of the 1,173 that remain, the named-context sample is unambiguous business
+    # logic:
+    #   kmp-toolkit KalmanSmoother.kt$111320.0        (metres per degree of latitude)
+    #   kmp-toolkit KeystoreCrypto.kt$256             (AES key size)
+    #   kmp-toolkit DynamicIntervalCalculator$1.25/1.5/1.75
+    #   Mileway NetworkModels.kt TrackMileageStatusResponse$200/504/505  (HTTP status codes)
+    #   Mileway *Repository/*ViewModel $86_400_000L, $3_600_000L, $10_000.0
+    #   Kursi AppPrefs.kt DecisionGrade.Companion$12/45/70, Elo.kt$400.0
+    # A bare 111320.0 in a Kalman smoother is the exact defect this rule exists to catch.
+    # Turning MagicNumber off to make a number go down is rubber-stamping the debt.
+    ignorePropertyDeclaration: true          # `val CardRadius = 16.dp` is self-documenting.
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreLocalVariableDeclaration: true
+    ignoreNamedArgument: true                # `alpha = 0.6f` names itself at the call site.
+    ignoreEnums: true
+      # ARTEFACT (19 findings). `CABINET_SECRETARY(1850)`, `SECRETARY(1600)`,
+      # `TurnSpeed.SLOW(1.4f)` — the enum entry name IS the name of the number. Extracting a
+      # constant to feed one enum entry adds indirection and no information.
+    ignoreAnnotated:
+      - 'Composable'
+      - 'androidx.compose.runtime.Composable'
+      # 16.dp / 0.6f alpha / 1f weight are Compose's vocabulary inside a @Composable tree.
+      # Mileway never had this line — that is where most of its 791 non-generated hits sit
+      # (AnalyticsHomeScreen.kt: 13 composables, 30 findings, no DrawScope; it clears entirely).
+      # HONEST LIMIT, measured: Kursi and cv-siddharth ALREADY carry this and still hold 85 and
+      # 112 UI-file findings, because the survivors live in `DrawScope` extension functions and
+      # Canvas draw lambdas, which carry no annotation for any ignore to match (verified: Kursi
+      # TutorialScreen.kt:999 `0.025f` inside `DrawScope.drawFeltGuilloche()`, HomeScreen.kt:2341
+      # `0.86f` inside a Canvas draw lambda). Those are NOT artefacts —
+      # `private const val NeedleRadiusFraction = 0.86f` is strictly better code, and the
+      # PascalCase TopLevelPropertyNaming above is what makes writing it idiomatic.
+      - 'Preview'
+      - 'androidx.compose.ui.tooling.preview.Preview'
+      # Mileway's project-local preview annotations, kept from its existing config:
+      - 'PreviewLightDark'
+      - 'PreviewMatrix'
+      - 'PreviewFontScales'
+      - 'PreviewDevices'
+      - 'PreviewStates'
+    ignoreNumbers:
+      # Keep this list SHORT. Kursi/toolkit/cv list 0 through 10 inclusive, which silently
+      # exempts `if (retries > 5)` and `grade >= 7`. -1/0/1/2 are detekt's defaults (identity,
+      # empty, off-by-one, halving); 100 is percentage conversion; 360 is degrees.
+      # Mileway's '800' and Kursi's '1000' are dropped: an 800ms animation and a 1000ms debounce
+      # are timings that deserve names.
+      - '-1'
+      - '0'
+      - '1'
+      - '2'
+      - '100'
+      - '360'
+  MaxLineLength:
+    active: false
+    # NOT forgiveness — a SINGLE-OWNER decision. ktlint's standard:max-line-length owns line
+    # length for this family, via .editorconfig. Two tools enforcing one rule at two different
+    # numbers is how the family ended up with detekt at its 120 default, .editorconfig at 160
+    # in Mileway/Kursi/HireSignal and 120 in PaymentsLab. The 235 MaxLineLength entries in
+    # Mileway's baseline are already dead under this setting. The single number is set once,
+    # in .editorconfig — see ktlintStandard.
+  WildcardImport:
+    active: false
+    # Compose and the design-system modules pull dozens of symbols per file and the IDE
+    # collapses them; fighting that produces churn, not clarity. MUST stay paired with
+    # ktlint_standard_no-wildcard-imports = disabled — Kursi is the only repo that currently
+    # pairs them, the rest leave ktlint contradicting detekt.
+  ForbiddenComment:
+    active: false                 # TODO(ios)/TODO(wasm) markers track real unimplemented
+                                  # platform actuals in a KMP tree; they are a map, not rot.
+  ReturnCount:
+    excludes: *notOurs
+    max: 4
+    excludeGuardClauses: true
+    # 89 non-generated findings, 61 of them Mileway — because Mileway never configured this
+    # rule and ran on detekt's default max: 2, while Kursi/toolkit/cv used 4 and PaymentsLab 5.
+    # Four different effective thresholds for one rule across one family.
+    # `?: return` / `if (x == null) return` at the top of a function are preconditions, not
+    # branches; early return for Loading/Error/Empty is how a Compose screen is written.
+    # Four real returns AFTER guards still fires, so the rule keeps its teeth.
+  ThrowsCount:
+    # CORRECTED against detekt-core-2.0.0-alpha.6's default-detekt-config.yml: ThrowsCount is a
+    # `style` rule, not an `exceptions` one. The standard as drafted put it under `exceptions:`,
+    # which hard-fails the run under `config.validation: true` ("Property 'exceptions>ThrowsCount'
+    # is misspelled or does not exist"). Every other repo copying the standard verbatim will hit
+    # the same failure — this is the corrected placement.
+    excludes: *notOurs
+    max: 3
+    excludeGuardClauses: true     # `require`/`check` at the top of a function are precondition
+                                  # declarations, not control flow.
+  MayBeConstant:
+    excludes: *notOurs
+    active: true                  # 21 real hits, all Kursi KursiTheme.kt TextureTokens
+                                  # (`val teakHatchAlpha = 0.04f`, `val guillocheDensity = 12`).
+                                  # `const val` is free and removes a field read per access on
+                                  # a shader draw path. Ninety seconds of work; it gets done.
+  FunctionOnlyReturningConstant:
+    excludes: *notOurs
+    active: true
+    ignoreOverridableFunction: true
+    ignoreActualFunction: true    # A KMP `actual fun` returning a constant on one platform is
+                                  # the whole point of expect/actual — the contract, not a smell.
+  UnusedParameter:
+    excludes: *notOurs
+    allowedNames: '_|ignored|expected'
+    # 56 real hits and NOT an artefact. Kursi HomeScreen.kt `onOnlineTap: () -> Unit`,
+    # LobbyScreen.kt `seed: Long`, TutorialScreen.kt `isLast`/`role`, Components.kt
+    # `faceUp: Boolean = true`/`influenceAlive: Int`. Every call site still computes and passes
+    # these for nothing. In a shared design-system module, dead parameter surface propagates to
+    # every consumer and the next reader cannot tell a placeholder from a bug.
+  UnusedPrivateFunction:
+    excludes: *notOurs
+    allowedNames: '(_|ignored|expected|serialVersionUID)'
+    ignoreAnnotated:
+      # ARTEFACT: a @Preview function is invoked by the IDE and by screenshot tests, never by
+      # application code. Prescribed by detekt's Compose guide.
+      - 'Preview'
+      - 'androidx.compose.ui.tooling.preview.Preview'
+      - 'PreviewLightDark'
+      - 'PreviewMatrix'
+      - 'PreviewFontScales'
+      - 'PreviewDevices'
+      - 'PreviewStates'
+  UnusedPrivateProperty:
+    excludes: *notOurs
+    allowedNames: '(_|ignored|expected|serialVersionUID)'
+  UnusedPrivateClass:
+    excludes: *notOurs
+    active: true
+  LoopWithTooManyJumpStatements:
+    excludes: *notOurs
+    maxJumpCount: 2
+    # 24 findings against detekt's default maxJumpCount: 1. One `continue` guard plus one
+    # `break` on the success case is a normal, readable scan loop. Three jumps still fires.
+
+# -----------------------------------------------------------------------------
+# COMPANION CHANGE, NOT PART OF THIS FILE
+#
+# detekt.yml cannot express a global source exclude, so the generated-code exclusion is
+# repeated per rule above. To have it once and unmissable, add this to
+# /Users/darkpandawarrior/Repos/KMP/kmp-build-logic/convention/src/main/kotlin/
+#   SharedDetektConventionPlugin.kt
+# It covers EVERY rule, including any rule enabled in future that nobody remembers to add
+# *notOurs to:
+#
+#   tasks.withType<dev.detekt.gradle.Detekt>().configureEach {
+#       // KSP/Room/Compose-resources output. 66% of the family's detekt baseline was this.
+#       exclude("**/build/generated/**")
+#   }
+#
+# Keep the YAML excludes as well: Mileway, Kursi and cv-siddharth do not apply the shared
+# convention plugin, and a repo that drifts off it must not silently lose the exclusion.
+# Belt and braces, same reasoning as FunctionNaming above.
+# -----------------------------------------------------------------------------

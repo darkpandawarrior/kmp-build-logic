@@ -6,6 +6,10 @@ plugins {
     // compose-resources workaround being assets-only) are discoverable today only by reading the
     // source. Generated site: convention/build/dokka/html.
     alias(libs.plugins.dokka)
+    // This build's own quality gate. These convention plugins configure nine repos; until now
+    // nothing measured THEM — a zero detekt baseline here meant unmeasured, not clean.
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.ktlint)
 }
 
 group = "com.siddharth.kmp.buildlogic"
@@ -37,6 +41,18 @@ dependencies {
     compileOnly(libs.googleServices.gradlePlugin)
     compileOnly(libs.firebaseCrashlytics.gradlePlugin)
 }
+
+detekt {
+    // Layer the family standard (config/detekt/detekt.yml) on top of detekt's defaults, exactly
+    // as SharedDetektConventionPlugin does for consumers. This build cannot apply its own
+    // convention plugin (it is the build that produces it), so the wiring is spelled out here.
+    buildUponDefaultConfig = true
+    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
+}
+
+// Deliberately NO detektPlugins(libs.detekt.formatting): that ruleset is ktlint running inside
+// detekt, and ktlint already runs here as itself. Two owners for one concern is the exact problem
+// the family standard exists to remove.
 
 tasks.validatePlugins {
     // Catches accidental use of internal Gradle APIs and missing @TaskAction annotations
