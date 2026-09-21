@@ -3,7 +3,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 
-private const val ktlintVersion = "1.0.1"
+private const val KtlintVersion = "1.0.1"
 
 /**
  * Convention plugin applying Spotless with a ktlint-based Kotlin/Kotlin-script formatter.
@@ -14,19 +14,20 @@ private const val ktlintVersion = "1.0.1"
  * // extend its own `spotless {}` block with `licenseHeaderFile(...)`.
  */
 class SharedSpotlessConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        pluginManager.apply("com.diffplug.spotless")
+    override fun apply(target: Project) =
+        with(target) {
+            pluginManager.apply("com.diffplug.spotless")
 
-        extensions.configure<SpotlessExtension> {
-            kotlin {
-                target("**/*.kt")
-                targetExclude("**/build/**/*.kt")
-                ktlint(ktlintVersion).editorConfigOverride(mapOf("android" to "true"))
-            }
-            format("kts") {
-                target("**/*.kts")
-                targetExclude("**/build/**/*.kts")
+            extensions.configure<SpotlessExtension> {
+                kotlin {
+                    target("**/*.kt")
+                    targetExclude("**/build/**/*.kt")
+                    ktlint(KtlintVersion).editorConfigOverride(mapOf("android" to "true"))
+                }
+                format("kts") {
+                    target("**/*.kts")
+                    targetExclude("**/build/**/*.kts")
+                }
             }
         }
-    }
 }
