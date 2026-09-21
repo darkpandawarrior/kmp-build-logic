@@ -52,7 +52,8 @@ class SharedPurityConventionPlugin : Plugin<Project> {
                 checkPurity.configure {
                     val coords =
                         cfgProvider.map { cfg ->
-                            cfg.incoming.resolutionResult.allDependencies.map { it.requested.toString() }
+                            cfg.incoming.resolutionResult.allDependencies
+                                .map { it.requested.toString() }
                         }
                     doLast {
                         val forbid = forbiddenProp.get()

@@ -19,18 +19,20 @@ import org.gradle.kotlin.dsl.getByType
  * those, or both when a module needs JUnit/MockK on the JVM side as well.
  */
 class SharedTestConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
-        fun testImpl(alias: String) =
-            libs.findLibrary(alias).ifPresent { lib ->
-                dependencies { add("testImplementation", lib.get()) }
-            }
+    override fun apply(target: Project) =
+        with(target) {
+            val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
-        testImpl("junit")
-        testImpl("mockk")
-        testImpl("kotlinx-coroutines-test")
-        testImpl("turbine")
-        testImpl("koin-test")
-        testImpl("koin-test-junit4")
-    }
+            fun testImpl(alias: String) =
+                libs.findLibrary(alias).ifPresent { lib ->
+                    dependencies { add("testImplementation", lib.get()) }
+                }
+
+            testImpl("junit")
+            testImpl("mockk")
+            testImpl("kotlinx-coroutines-test")
+            testImpl("turbine")
+            testImpl("koin-test")
+            testImpl("koin-test-junit4")
+        }
 }

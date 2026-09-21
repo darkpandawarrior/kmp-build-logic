@@ -13,14 +13,15 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
  * it in their own build file so it never drifts from the server.
  */
 class SharedKmpLibraryConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        with(pluginManager) {
-            apply("org.jetbrains.kotlin.multiplatform")
-            apply("com.android.kotlin.multiplatform.library")
+    override fun apply(target: Project) =
+        with(target) {
+            with(pluginManager) {
+                apply("org.jetbrains.kotlin.multiplatform")
+                apply("com.android.kotlin.multiplatform.library")
+            }
+            extensions.configure<KotlinMultiplatformExtension> {
+                iosArm64()
+                iosSimulatorArm64()
+            }
         }
-        extensions.configure<KotlinMultiplatformExtension> {
-            iosArm64()
-            iosSimulatorArm64()
-        }
-    }
 }

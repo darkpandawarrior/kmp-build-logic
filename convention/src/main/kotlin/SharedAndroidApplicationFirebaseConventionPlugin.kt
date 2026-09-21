@@ -22,34 +22,35 @@ import org.gradle.kotlin.dsl.getByType
  * backend is configured (a valid `google-services.json` is present).
  */
 class SharedAndroidApplicationFirebaseConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        with(pluginManager) {
-            apply("com.google.gms.google-services")
-            apply("com.google.firebase.crashlytics")
-        }
-
-        val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
-
-        dependencies {
-            libs.findLibrary("firebase-bom").ifPresent { bom ->
-                add("implementation", platform(bom.get()))
+    override fun apply(target: Project) =
+        with(target) {
+            with(pluginManager) {
+                apply("com.google.gms.google-services")
+                apply("com.google.firebase.crashlytics")
             }
-            libs.findLibrary("firebase-analytics").ifPresent { lib ->
-                add("implementation", lib.get())
-            }
-            libs.findLibrary("firebase-crashlytics").ifPresent { lib ->
-                add("implementation", lib.get())
-            }
-        }
 
-        extensions.configure<ApplicationExtension> {
-            buildTypes.configureEach {
-                // Upload the Crashlytics mapping file so release stack traces are symbolicated.
-                // Only effective when a Firebase backend is configured via google-services.json.
-                configure<CrashlyticsExtension> {
-                    mappingFileUploadEnabled = true
+            val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+
+            dependencies {
+                libs.findLibrary("firebase-bom").ifPresent { bom ->
+                    add("implementation", platform(bom.get()))
+                }
+                libs.findLibrary("firebase-analytics").ifPresent { lib ->
+                    add("implementation", lib.get())
+                }
+                libs.findLibrary("firebase-crashlytics").ifPresent { lib ->
+                    add("implementation", lib.get())
+                }
+            }
+
+            extensions.configure<ApplicationExtension> {
+                buildTypes.configureEach {
+                    // Upload the Crashlytics mapping file so release stack traces are symbolicated.
+                    // Only effective when a Firebase backend is configured via google-services.json.
+                    configure<CrashlyticsExtension> {
+                        mappingFileUploadEnabled = true
+                    }
                 }
             }
         }
-    }
 }

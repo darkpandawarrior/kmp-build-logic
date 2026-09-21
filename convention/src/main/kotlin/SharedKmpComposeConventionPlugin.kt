@@ -11,16 +11,17 @@ import org.gradle.api.provider.Provider
  * plugins. Consuming modules declare only their `android { namespace/... }` block + source sets.
  */
 class SharedKmpComposeConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        with(pluginManager) {
-            apply("shared.kmp.library")
-            apply("org.jetbrains.compose")
-            apply("org.jetbrains.kotlin.plugin.compose")
+    override fun apply(target: Project) =
+        with(target) {
+            with(pluginManager) {
+                apply("shared.kmp.library")
+                apply("org.jetbrains.compose")
+                apply("org.jetbrains.kotlin.plugin.compose")
+            }
+            configureComposeCompilerMetrics()
+            configureComposeResourcesAndroidAssetsWorkaround()
+            configureComposeResourcesAndroidAssetsElements()
         }
-        configureComposeCompilerMetrics()
-        configureComposeResourcesAndroidAssetsWorkaround()
-        configureComposeResourcesAndroidAssetsElements()
-    }
 
     /**
      * ponytail: AGP's `com.android.kotlin.multiplatform.library` plugin doesn't implement Android

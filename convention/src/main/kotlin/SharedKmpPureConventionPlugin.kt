@@ -18,17 +18,18 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
  */
 class SharedKmpPureConventionPlugin : Plugin<Project> {
     @OptIn(ExperimentalWasmDsl::class)
-    override fun apply(target: Project) = with(target) {
-        pluginManager.apply("org.jetbrains.kotlin.multiplatform")
+    override fun apply(target: Project) =
+        with(target) {
+            pluginManager.apply("org.jetbrains.kotlin.multiplatform")
 
-        extensions.configure<KotlinMultiplatformExtension> {
-            jvm()
-            iosArm64()
-            iosSimulatorArm64()
-            wasmJs {
-                browser()
-                nodejs()
+            extensions.configure<KotlinMultiplatformExtension> {
+                jvm()
+                iosArm64()
+                iosSimulatorArm64()
+                wasmJs {
+                    browser()
+                    nodejs()
+                }
             }
         }
-    }
 }

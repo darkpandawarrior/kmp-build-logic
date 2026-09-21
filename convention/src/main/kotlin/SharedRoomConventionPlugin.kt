@@ -23,32 +23,33 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
  * `kspIosSimulatorArm64`) only exist once the Kotlin Multiplatform targets are already declared.
  */
 class SharedRoomConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        with(pluginManager) {
-            apply("androidx.room3")
-            apply("com.google.devtools.ksp")
-        }
+    override fun apply(target: Project) =
+        with(target) {
+            with(pluginManager) {
+                apply("androidx.room3")
+                apply("com.google.devtools.ksp")
+            }
 
-        extensions.configure<RoomExtension> {
-            schemaDirectory("$projectDir/schemas")
-        }
+            extensions.configure<RoomExtension> {
+                schemaDirectory("$projectDir/schemas")
+            }
 
-        val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+            val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
-        libs.findLibrary("androidx-room-runtime").ifPresent { lib ->
-            extensions.configure<KotlinMultiplatformExtension> {
-                sourceSets.getByName("commonMain") {
-                    dependencies { implementation(lib.get()) }
+            libs.findLibrary("androidx-room-runtime").ifPresent { lib ->
+                extensions.configure<KotlinMultiplatformExtension> {
+                    sourceSets.getByName("commonMain") {
+                        dependencies { implementation(lib.get()) }
+                    }
+                }
+            }
+
+            libs.findLibrary("androidx-room-compiler").ifPresent { lib ->
+                dependencies {
+                    add("kspAndroid", lib.get())
+                    add("kspIosArm64", lib.get())
+                    add("kspIosSimulatorArm64", lib.get())
                 }
             }
         }
-
-        libs.findLibrary("androidx-room-compiler").ifPresent { lib ->
-            dependencies {
-                add("kspAndroid", lib.get())
-                add("kspIosArm64", lib.get())
-                add("kspIosSimulatorArm64", lib.get())
-            }
-        }
-    }
 }

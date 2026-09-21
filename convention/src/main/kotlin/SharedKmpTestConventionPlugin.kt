@@ -30,24 +30,25 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
  * Apply with `id("shared.kmp.test")`.
  */
 class SharedKmpTestConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+    override fun apply(target: Project) =
+        with(target) {
+            val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
-        pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
-            extensions.configure<KotlinMultiplatformExtension> {
-                listOf(
-                    "kotlin-test",
-                    "kotlinx-coroutines-test",
-                    "turbine",
-                    "koin-test",
-                ).forEach { alias ->
-                    libs.findLibrary(alias).ifPresent { lib ->
-                        sourceSets.getByName("commonTest") {
-                            dependencies { implementation(lib.get()) }
+            pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
+                extensions.configure<KotlinMultiplatformExtension> {
+                    listOf(
+                        "kotlin-test",
+                        "kotlinx-coroutines-test",
+                        "turbine",
+                        "koin-test",
+                    ).forEach { alias ->
+                        libs.findLibrary(alias).ifPresent { lib ->
+                            sourceSets.getByName("commonTest") {
+                                dependencies { implementation(lib.get()) }
+                            }
                         }
                     }
                 }
             }
         }
-    }
 }

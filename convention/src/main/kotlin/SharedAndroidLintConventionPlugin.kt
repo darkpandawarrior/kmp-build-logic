@@ -20,20 +20,21 @@ import org.gradle.kotlin.dsl.configure
  * Apply with `id("shared.android.lint")`.
  */
 class SharedAndroidLintConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        when {
-            pluginManager.hasPlugin("com.android.application") ->
-                configure<ApplicationExtension> { lint(Lint::configure) }
+    override fun apply(target: Project) =
+        with(target) {
+            when {
+                pluginManager.hasPlugin("com.android.application") ->
+                    configure<ApplicationExtension> { lint(Lint::configure) }
 
-            pluginManager.hasPlugin("com.android.library") ->
-                configure<LibraryExtension> { lint(Lint::configure) }
+                pluginManager.hasPlugin("com.android.library") ->
+                    configure<LibraryExtension> { lint(Lint::configure) }
 
-            else -> {
-                apply(plugin = "com.android.lint")
-                configure<Lint>(Lint::configure)
+                else -> {
+                    apply(plugin = "com.android.lint")
+                    configure<Lint>(Lint::configure)
+                }
             }
         }
-    }
 }
 
 private fun Lint.configure() {

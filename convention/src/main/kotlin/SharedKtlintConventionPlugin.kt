@@ -9,7 +9,8 @@ import org.gradle.api.Project
  * (`shared.spotless`). Pick one per module — running both against the same sources is redundant.
  */
 class SharedKtlintConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        pluginManager.apply("org.jlleitschuh.gradle.ktlint")
-    }
+    override fun apply(target: Project) =
+        with(target) {
+            pluginManager.apply("org.jlleitschuh.gradle.ktlint")
+        }
 }
