@@ -29,6 +29,10 @@ abstract class PurityExtension {
     abstract val configuration: Property<String>
 }
 
+/**
+ * Registers the `purity` extension and the `checkPurity` task described above, and wires the task
+ * into `check`. A module with an empty `forbidden` list is a no-op.
+ */
 class SharedPurityConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
