@@ -32,6 +32,20 @@ class SharedAndroidApplicationConventionPlugin : Plugin<Project> {
                 compose = true
                 buildConfig = false
             }
+
+            // AGP 9.5.0-alpha06 registers generate<Variant>ComposePreviewRunfiles for every
+            // Compose-enabled variant and hard-fails when that variant has no unit-test component.
+            // Roborazzi disables the unit-test component on non-debug variants via beforeVariants,
+            // so the two plugins contradict each other and the project cannot even configure.
+            // Re-enabling the component only registers the task graph — no release unit test is
+            // written or run — so Roborazzi's intent is preserved.
+            // Remove once AGP stops requiring a unit-test component to generate preview runfiles.
+            extensions.configure<com.android.build.api.variant.AndroidComponentsExtension<*, *, *>>("androidComponents") {
+                beforeVariants(selector().all()) { variant ->
+                    (variant as? com.android.build.api.variant.HasUnitTestBuilder)?.enableUnitTest = true
+                }
+            }
+
         }
     }
 }
