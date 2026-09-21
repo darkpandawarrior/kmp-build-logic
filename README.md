@@ -6,10 +6,10 @@
 
 [![CI](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/ci.yml/badge.svg)](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/ci.yml)
 [![No AI attribution](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/no-ai-attribution.yml/badge.svg)](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/no-ai-attribution.yml)
-![Kotlin](https://img.shields.io/badge/Kotlin-2.4.20--RC-7F52FF?logo=kotlin&logoColor=white)
-![AGP](https://img.shields.io/badge/AGP-9.5.0--alpha02-3DDC84?logo=android&logoColor=white)
-![Compose Multiplatform](https://img.shields.io/badge/Compose%20MP-1.12.0--rc01-4285F4?logo=jetpackcompose&logoColor=white)
-![Plugins](https://img.shields.io/badge/plugins-17-success)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.4.20-7F52FF?logo=kotlin&logoColor=white)
+![AGP](https://img.shields.io/badge/AGP-9.5.0--alpha06-3DDC84?logo=android&logoColor=white)
+![Compose Multiplatform](https://img.shields.io/badge/Compose%20MP-1.13.0--alpha01-4285F4?logo=jetpackcompose&logoColor=white)
+![Plugins](https://img.shields.io/badge/plugins-18-success)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 **[Why](#why-this-exists)** · **[Features](#features)** · **[Architecture](#architecture)** · **[Tech stack](#tech-stack)** · **[Getting started](#getting-started)** · **[Roadmap](#roadmap)**
@@ -37,7 +37,7 @@
 
 </details>
 
-> **At a glance**, **17 convention plugins** (KMP chain · Android · testing · quality · DI/data ·
+> **At a glance**, **18 convention plugins** (KMP chain · Android · testing · quality · DI/data ·
 > flavors · Firebase · lint · purity) under one neutral `shared.*` prefix, `:convention`-only
 > composite build, consumed today by **6 sibling repos**: Doori, PaymentsLab-KMP, kmp-toolkit,
 > Candidai, Gaddi and kmp-app-template.
@@ -50,7 +50,7 @@ pull in the same Koin/test/quality baseline for every module. Copy-pasting that 
 across *repos*, is exactly the kind of drift a convention plugin exists to kill.
 
 This repo extracts that shared surface out of production KMP codebases into a standalone,
-independently-buildable Gradle composite build: 17 convention plugins under a neutral `shared.*`
+independently-buildable Gradle composite build: 18 convention plugins under a neutral `shared.*`
 prefix, plus the Compose-compiler-metrics wiring several of them share. It's vendored as a git
 submodule (`external/kmp-build-logic`) and pulled in via `pluginManagement { includeBuild(...) }` by
 [**Doori**](https://github.com/darkpandawarrior/Doori),
@@ -74,7 +74,8 @@ on purpose, see [What's deliberately not here](#whats-deliberately-not-here).
 | **Android** | `shared.android.application` | AGP application + Compose-compiler plugins, `compileSdk 37` / Java 21 / Compose enabled |
 | | `shared.android.library` | AGP library + Compose-compiler plugins for an Android-only leaf module (e.g. kmp-toolkit's `:security` + its 11 payment-provider modules), `compileSdk 37` / `minSdk 24` / Java 21, single "release" variant with sources |
 | | `shared.android.firebase` | Applies after `shared.android.application`, wires `google-services` + `firebase-crashlytics` Gradle plugins, the Firebase BOM/Analytics/Crashlytics runtime libs (looked up from the consumer's own catalog), and enables Crashlytics mapping-file upload for every build type |
-| **Testing** | `shared.test` | JVM unit-test stack on `testImplementation`: JUnit, MockK, coroutines-test, Turbine, Koin-test |
+| **Testing** | `shared.test` | JVM/Android unit-test stack on `testImplementation`: JUnit, MockK, coroutines-test, Turbine, Koin-test. Does **not** reach `commonTest` |
+| | `shared.kmp.test` | Multiplatform sibling of `shared.test`: the KMP-capable subset (kotlin-test, coroutines-test, Turbine, Koin-test) on `commonTest`, so it reaches every declared target including iOS |
 | **Quality** | `shared.detekt` | Detekt 2.x static analysis, `buildUponDefaultConfig`, `detekt-formatting` ruleset |
 | | `shared.ktlint` | ktlint Gradle plugin with defaults (alternative to `shared.spotless`) |
 | | `shared.spotless` | Spotless with ktlint-based Kotlin/Kotlin-script formatting |
@@ -91,6 +92,41 @@ picks up `configureComposeCompilerMetrics()`: it always wires the *consumer's* r
 `compose_stability.conf` if present, and additionally emits Compose compiler metrics/stability
 reports under `build/compose-metrics` + `build/compose-reports` when run with `-Pcompose.metrics`.
 See [`compose_stability.conf`](compose_stability.conf) in this repo for the template.
+
+### Target matrix
+
+Which targets each plugin actually configures. A module gets an iOS target only from a plugin in
+the **KMP chain** or `shared.kmp.pure` — applying an `shared.android.*` plugin alone produces an
+Android-only module, and nothing in the build reports that as an error.
+
+| Plugin ID | Android | iOS | JVM | wasmJs | How the target set is decided |
+|---|---|---|---|---|---|
+| `shared.kmp.library` | yes (AGP `com.android.kotlin.multiplatform.library`) | `iosArm64` + `iosSimulatorArm64` | no | no | Declared by the plugin |
+| `shared.kmp.compose` | yes | `iosArm64` + `iosSimulatorArm64` | no | no | Inherited, applies `shared.kmp.library` |
+| `shared.cmp.feature` | yes | `iosArm64` + `iosSimulatorArm64` | no | no | Inherited, applies `shared.kmp.compose`; deps go to `commonMain` (all targets) + `androidMain` |
+| `shared.kmp.pure` | no | `iosArm64` + `iosSimulatorArm64` | `jvm()` | `browser()` + `nodejs()` | Declared by the plugin; no Android by design |
+| `shared.android.application` | yes | no | no | no | Android app module, correctly Android-only |
+| `shared.android.library` | yes | no | no | no | Android-only leaf library by design; the KMP sibling is `shared.kmp.library` |
+| `shared.android.firebase` | yes | no | no | no | Android-app-only, applies after `shared.android.application` |
+| `shared.android.lint` | yes | no | JVM fallback | no | Reuses the app/library Lint extension when present, else standalone `com.android.lint` |
+| `shared.room` | yes (`kspAndroid`) | `kspIosArm64` + `kspIosSimulatorArm64` | no | no | Follows the host module's targets; KSP configs match `shared.kmp.library`'s set exactly |
+| `shared.koin` | inherited | inherited | inherited | inherited | `commonMain`/`commonTest`, so every target the host declares |
+| `shared.test` | yes | **no** | yes | no | `testImplementation` only, JVM/Android; does not reach `commonTest` |
+| `shared.kmp.test` | inherited | inherited | inherited | inherited | `commonTest`, so every target the host declares |
+| `shared.detekt` / `shared.ktlint` / `shared.spotless` | n/a | n/a | n/a | n/a | Source-level, target-agnostic |
+| `shared.kover` | yes | no | yes | no | JVM/Android bytecode coverage; Kover does not instrument Kotlin/Native |
+| `shared.purity` | n/a | n/a | n/a | n/a | Inspects one resolvable configuration, default `jvmRuntimeClasspath` |
+| `shared.flavors` | yes | inherited | inherited | inherited | `kmp-product-flavors` with an AGP bridge, target-agnostic |
+
+**No convention plugin declares a `binaries.framework { }`, and that is deliberate.** A library
+convention plugin is applied by every shared module, so declaring a framework binary in one would
+produce a framework per module instead of the single umbrella framework Xcode links. The framework
+binary belongs in the consuming app's umbrella module's own `build.gradle.kts`. A consumer whose
+iOS build produces no framework should look there, not here.
+
+`shared.kmp.library` deliberately omits `iosX64` (Intel simulator). If a consumer adds `iosX64()` in
+its own build file, note that `shared.room` will **not** wire a `kspIosX64` dependency for it, its
+KSP configurations are the fixed set above.
 
 ## Architecture
 
@@ -109,6 +145,7 @@ graph LR
         AL["shared.android.library"]
         FB["shared.android.firebase"]
         T["shared.test"]
+        KT["shared.kmp.test"]
         DTK["shared.detekt"]
         KTL["shared.ktlint"]
         SPL["shared.spotless"]
@@ -136,7 +173,7 @@ graph LR
 
 | Module | Contents |
 |---|---|
-| `:convention` | The only module in this composite build, 17 `Plugin<Project>` classes + `ComposeMetrics.kt`, registered via `gradlePlugin { plugins { ... } }` in `convention/build.gradle.kts` |
+| `:convention` | The only module in this composite build, 18 `Plugin<Project>` classes + `ComposeMetrics.kt`, registered via `gradlePlugin { plugins { ... } }` in `convention/build.gradle.kts` |
 
 ### Project structure
 
@@ -155,6 +192,7 @@ kmp-build-logic/
 │       ├── SharedAndroidApplicationFirebaseConventionPlugin.kt
 │       ├── SharedAndroidLintConventionPlugin.kt
 │       ├── SharedTestConventionPlugin.kt
+│       ├── SharedKmpTestConventionPlugin.kt
 │       ├── SharedDetektConventionPlugin.kt
 │       ├── SharedKtlintConventionPlugin.kt
 │       ├── SharedSpotlessConventionPlugin.kt
@@ -172,20 +210,20 @@ kmp-build-logic/
 
 | Layer | Version |
 |---|---|
-| Kotlin | 2.4.20-RC |
-| Android Gradle Plugin | 9.5.0-alpha02 |
-| Compose Multiplatform | 1.12.0-rc01 |
-| Gradle | 9.7.0 |
+| Kotlin | 2.4.20 |
+| Android Gradle Plugin | 9.5.0-alpha06 |
+| Compose Multiplatform | 1.13.0-alpha01 |
+| Gradle | 9.8.0-rc-2 |
 | Detekt | 2.0.0-alpha.6 |
 | ktlint-gradle | 14.2.0 |
-| Spotless | 8.8.0 |
-| Kover | 0.9.8 |
-| Room (KMP) | 3.0.2 |
-| KSP | 2.3.11 |
-| kmp-product-flavors | 2.8.3 |
+| Spotless | 8.10.2 |
+| Kover | 0.9.9 |
+| Room (KMP) | 3.1.0-alpha01 (`androidx.room3`, not `androidx.room` 2.x) |
+| KSP | 2.3.12 (no longer version-locked to Kotlin) |
+| kmp-product-flavors | 2.10.0 |
 | google-services | 4.5.0 |
 | firebase-crashlytics (Gradle plugin) | 3.0.8 |
-| Firebase BOM | 34.18.0 |
+| Firebase BOM | 34.19.0 |
 | JDK | 21 (resolved automatically via the foojay toolchain resolver if not installed) |
 
 ## Getting started
@@ -224,7 +262,8 @@ android {
 ```
 
 Plugins that look up dependencies from a version catalog (`shared.cmp.feature`, `shared.test`,
-`shared.koin`, `shared.room`, `shared.android.firebase`, `shared.flavors`) resolve those aliases
+`shared.kmp.test`, `shared.koin`, `shared.room`, `shared.android.firebase`, `shared.flavors`)
+resolve those aliases
 from **your own** `gradle/libs.versions.toml` via `VersionCatalogsExtension.findLibrary(...)`
 see the [Features](#features) table and each plugin's KDoc for the exact alias names it expects.
 
@@ -246,6 +285,8 @@ That's also the exact command CI runs (`.github/workflows/ci.yml`).
 - [x] KMP chain: `shared.kmp.library` → `shared.kmp.compose` → `shared.cmp.feature`, plus standalone `shared.kmp.pure`
 - [x] Android application + Android-only library conventions
 - [x] Quality stack: `shared.detekt`, `shared.ktlint`, `shared.spotless`, `shared.kover`, `shared.android.lint`
+- [x] `shared.kmp.test`, the multiplatform sibling of `shared.test`, so a KMP module's `commonTest`
+      (and therefore its iOS test source sets) gets a test stack instead of silently getting none
 - [x] `shared.purity`, dependency-purity tripwire (`checkPurity`, wired into `check`) for pure leaf modules
 - [x] DI/data: `shared.koin`, `shared.room`
 - [x] `shared.flavors` (kmp-product-flavors integration)

@@ -31,6 +31,16 @@ class SharedAndroidLibraryConventionPlugin : Plugin<Project> {
                 compose = true
                 buildConfig = false
             }
+            testOptions {
+                // AGP 9.5.0-alpha06 registers generate<Variant>ComposePreviewRunfiles for every
+                // module with compose = true, and that registration hard-fails on AGP's default
+                // isIncludeAndroidResources = false. Twelve modules apply this plugin, so this one
+                // line is the whole fix. NOTE: it is a behaviour change, not just a flag - unit
+                // tests in those modules now run against compiled Android resources.
+                unitTests {
+                    isIncludeAndroidResources = true
+                }
+            }
             publishing {
                 singleVariant("release") { withSourcesJar() }
             }
