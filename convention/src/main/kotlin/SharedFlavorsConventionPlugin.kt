@@ -22,24 +22,27 @@ import org.gradle.kotlin.dsl.getByType
  * consuming module.
  */
 class SharedFlavorsConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        pluginManager.apply(KmpFlavorPlugin::class.java)
+    override fun apply(target: Project) =
+        with(target) {
+            pluginManager.apply(KmpFlavorPlugin::class.java)
 
-        val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
-        val resolvedAppId =
-            libs.findVersion("appId")
-                .map { it.requiredVersion }
-                .orElse(target.group.toString())
-        val resolvedAppDisplayName =
-            libs.findVersion("appDisplayName")
-                .map { it.requiredVersion }
-                .orElse(target.name)
+            val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+            val resolvedAppId =
+                libs
+                    .findVersion("appId")
+                    .map { it.requiredVersion }
+                    .orElse(target.group.toString())
+            val resolvedAppDisplayName =
+                libs
+                    .findVersion("appDisplayName")
+                    .map { it.requiredVersion }
+                    .orElse(target.name)
 
-        extensions.configure<KmpFlavorExtension> {
-            buildConfigPackage.set(resolvedAppId)
-            appId.set(resolvedAppId)
-            appDisplayName.set(resolvedAppDisplayName)
-            enableBuildTypes.set(true)
+            extensions.configure<KmpFlavorExtension> {
+                buildConfigPackage.set(resolvedAppId)
+                appId.set(resolvedAppId)
+                appDisplayName.set(resolvedAppDisplayName)
+                enableBuildTypes.set(true)
+            }
         }
-    }
 }

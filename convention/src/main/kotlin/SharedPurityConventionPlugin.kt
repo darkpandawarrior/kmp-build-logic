@@ -29,6 +29,10 @@ abstract class PurityExtension {
     abstract val configuration: Property<String>
 }
 
+/**
+ * Registers the `purity` extension and the `checkPurity` task described above, and wires the task
+ * into `check`. A module with an empty `forbidden` list is a no-op.
+ */
 class SharedPurityConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
@@ -52,7 +56,8 @@ class SharedPurityConventionPlugin : Plugin<Project> {
                 checkPurity.configure {
                     val coords =
                         cfgProvider.map { cfg ->
-                            cfg.incoming.resolutionResult.allDependencies.map { it.requested.toString() }
+                            cfg.incoming.resolutionResult.allDependencies
+                                .map { it.requested.toString() }
                         }
                     doLast {
                         val forbid = forbiddenProp.get()

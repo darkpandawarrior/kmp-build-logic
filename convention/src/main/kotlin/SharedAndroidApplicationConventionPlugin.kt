@@ -15,25 +15,24 @@ import org.gradle.kotlin.dsl.configure
  * `BuildConfig` fields must opt back in itself via `android { buildFeatures { buildConfig = true } }`.
  */
 class SharedAndroidApplicationConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        with(pluginManager) {
-            // AGP 9 provides built-in Kotlin support — applying kotlin.android is no longer needed.
-            apply("com.android.application")
-            apply("org.jetbrains.kotlin.plugin.compose")
-        }
-        configureComposeCompilerMetrics()
-        extensions.configure<ApplicationExtension> {
-            compileSdk = 37
-            compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_21
-                targetCompatibility = JavaVersion.VERSION_21
+    override fun apply(target: Project) =
+        with(target) {
+            with(pluginManager) {
+                // AGP 9 provides built-in Kotlin support — applying kotlin.android is no longer needed.
+                apply("com.android.application")
+                apply("org.jetbrains.kotlin.plugin.compose")
             }
-            buildFeatures {
-                compose = true
-                buildConfig = false
+            configureComposeCompilerMetrics()
+            extensions.configure<ApplicationExtension> {
+                compileSdk = CompileSdk
+                compileOptions {
+                    sourceCompatibility = JavaVersion.VERSION_21
+                    targetCompatibility = JavaVersion.VERSION_21
+                }
+                buildFeatures {
+                    compose = true
+                    buildConfig = false
+                }
             }
-
         }
-
-    }
 }

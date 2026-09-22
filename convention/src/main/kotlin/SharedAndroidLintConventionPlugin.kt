@@ -11,31 +11,33 @@ import org.gradle.kotlin.dsl.configure
  *
  * Reuses the existing `com.android.application` / `com.android.library` Lint extension when present,
  * otherwise applies the standalone `com.android.lint` plugin so non-Android JVM modules can be linted
- * too. Enables XML + SARIF reports (for CI ingestion), turns on `checkDependencies`, and disables the
- * noisy `GradleDependency` check (version-bump nags belong to Renovate, not Lint).
+ * too. Turns on `checkDependencies` and disables the noisy `GradleDependency` check (version-bump
+ * nags belong to Renovate, not Lint).
+ *
+ * No `xmlReport`/`sarifReport` toggles: AGP 9 deprecated both and now always generates the reports.
+ * CI consumes them as the `LINT_XML_REPORT` / `LINT_SARIF_REPORT` (or `AGGREGATED_*`) artifacts.
  *
  * Apply with `id("shared.android.lint")`.
  */
 class SharedAndroidLintConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        when {
-            pluginManager.hasPlugin("com.android.application") ->
-                configure<ApplicationExtension> { lint(Lint::configure) }
+    override fun apply(target: Project) =
+        with(target) {
+            when {
+                pluginManager.hasPlugin("com.android.application") ->
+                    configure<ApplicationExtension> { lint(Lint::configure) }
 
-            pluginManager.hasPlugin("com.android.library") ->
-                configure<LibraryExtension> { lint(Lint::configure) }
+                pluginManager.hasPlugin("com.android.library") ->
+                    configure<LibraryExtension> { lint(Lint::configure) }
 
-            else -> {
-                apply(plugin = "com.android.lint")
-                configure<Lint>(Lint::configure)
+                else -> {
+                    apply(plugin = "com.android.lint")
+                    configure<Lint>(Lint::configure)
+                }
             }
         }
-    }
 }
 
 private fun Lint.configure() {
-    xmlReport = true
-    sarifReport = true
     checkDependencies = true
     disable += "GradleDependency"
 }

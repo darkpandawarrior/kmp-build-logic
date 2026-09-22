@@ -49,5 +49,12 @@ firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 
 [plugins]
+# Detekt + ktlint applied to THIS build's own Kotlin (the convention plugins themselves), against
+# the family standard in config/detekt/detekt.yml + .editorconfig. The `*-gradlePlugin` library
+# entries above are compileOnly compile-time deps of the convention sources; these are the plugin
+# markers that actually run the tools here. ktlint (not Spotless, not detekt's ktlint-wrapper
+# ruleset) is the single owner of formatting and line length — see .editorconfig.
+detekt = { id = "dev.detekt", version.ref = "detekt" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 # API docs for the convention plugins — the most load-bearing, least documented code in the family.
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

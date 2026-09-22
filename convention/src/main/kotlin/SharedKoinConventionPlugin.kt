@@ -24,22 +24,23 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
  * a Compose feature (e.g. a shared data/domain module).
  */
 class SharedKoinConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+    override fun apply(target: Project) =
+        with(target) {
+            val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
-        pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
-            extensions.configure<KotlinMultiplatformExtension> {
-                libs.findLibrary("koin-core").ifPresent { lib ->
-                    sourceSets.getByName("commonMain") {
-                        dependencies { implementation(lib.get()) }
+            pluginManager.withPlugin("org.jetbrains.kotlin.multiplatform") {
+                extensions.configure<KotlinMultiplatformExtension> {
+                    libs.findLibrary("koin-core").ifPresent { lib ->
+                        sourceSets.getByName("commonMain") {
+                            dependencies { implementation(lib.get()) }
+                        }
                     }
-                }
-                libs.findLibrary("koin-test").ifPresent { lib ->
-                    sourceSets.getByName("commonTest") {
-                        dependencies { implementation(lib.get()) }
+                    libs.findLibrary("koin-test").ifPresent { lib ->
+                        sourceSets.getByName("commonTest") {
+                            dependencies { implementation(lib.get()) }
+                        }
                     }
                 }
             }
         }
-    }
 }

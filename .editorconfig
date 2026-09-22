@@ -1,0 +1,104 @@
+# =============================================================================
+# .editorconfig — repo root, all nine repos. ktlint owns formatting AND line length.
+#
+# Every `disabled` here is HALF A PAIR. detekt turns the same rule off in detekt.yml.
+# Change one side without the other and the two tools start contradicting each other —
+# which is exactly how the family ended up with 49 MatchingDeclarationName findings
+# (detekt enforcing it, PaymentsLab's ktlint not) and a WildcardImport split where only
+# Kursi paired the two.
+#
+# Plugin: org.jlleitschuh.gradle.ktlint 14.2.0 everywhere.
+#   Mileway is on 12.3.0                          -> bump.
+#   kmp-toolkit and cv-siddharth-kmp declare NO ktlint plugin at all -> add it. They are
+#     currently formatted by nothing, which is why cv carries 203 baselined detekt findings
+#     with no formatting gate behind them.
+#   kmp-app-template, kmp-build-logic and Ghar/app need this file too.
+# =============================================================================
+
+root = true
+
+# ARTEFACT. Room/KSP/Compose-resources output. Same exclusion as detekt's
+# `**/build/generated/**`: machine-written, rewritten on every build, unformattable.
+# All four app repos already have some form of this — keep it, and make the glob identical
+# everywhere (PaymentsLab's `[**/build/**]` without the `/*.kt` is the correct broader form).
+[**/build/**]
+ktlint = disabled
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{kt,kts}]
+# ONE number for the family. Today it is 160 in Mileway/Kursi/HireSignal, 120 in PaymentsLab,
+# and detekt was separately enforcing its own 120 default — three numbers for one rule, with
+# the baseline absorbing the disagreement (235 entries).
+# 140 is the single value: wide enough for a Compose modifier chain with a trailing lambda,
+# narrow enough that a side-by-side diff still works.
+# This is a REAL TIGHTENING for Mileway/Kursi/HireSignal, not bookkeeping. `ktlintFormat`
+# auto-wraps some of it; the rest is hand work and belongs in remediation, NOT in a baseline.
+# detekt's style.MaxLineLength stays `active: false` so this line is the only place the number
+# lives.
+max_line_length = 140
+
+# @Composable functions are PascalCase by Compose convention.
+# PaymentsLab's targeted form, promoted family-wide. Mileway, Kursi and HireSignal currently
+# use `ktlint_standard_function-naming = disabled`, which ALSO stops ktlint checking the naming
+# of every ordinary function in the repo. This exempts exactly the composables and keeps the
+# rule working everywhere else.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+
+# PAIRED WITH detekt naming.MatchingDeclarationName: active: false.
+# Deliberate idiom: small related declarations are grouped per file (a composable plus its UI
+# enum, a catalog plus its item type, a mapper plus its DTO). PaymentsLab already had this pair
+# correct; the other repos had detekt enforcing one-public-class-per-file while ktlint did not,
+# which produced 49 of the family's findings.
+ktlint_standard_filename = disabled
+
+# PAIRED WITH detekt style.WildcardImport: active: false.
+# Compose and the design-system modules pull dozens of symbols per file and the IDE collapses
+# the imports automatically. Only Kursi currently pairs these; everywhere else ktlint has been
+# contradicting detekt.
+ktlint_standard_no-wildcard-imports = disabled
+
+# PAIRED WITH detekt naming.TopLevelPropertyNaming: constantPattern: '[A-Z][A-Za-z0-9]*'.
+# Compose's API guidelines specify PascalCase for top-level constants — `private const val
+# BonusCap = 150`, ForgeDamping, TierWordStart (32 such properties across the family, all
+# PascalCase, all currently flagged). ktlint's property-naming rule demands SCREAMING_SNAKE for
+# `const val` and has no ignore-when-annotated escape, so it has to come off wholesale.
+# HireSignal currently scopes this to `[**/*NavGraph.kt]` only — that scoping can be deleted,
+# it is subsumed here.
+ktlint_standard_property-naming = disabled
+
+[*.{yml,yaml}]
+indent_size = 2
+
+[*.{xml,svg}]
+indent_size = 4
+
+[*.toml]
+indent_size = 4
+
+# -----------------------------------------------------------------------------
+# NOT ADOPTED, and why.
+#
+# io.nlopez.compose.rules (ktlint and detekt flavours) — the maintained fork of the Twitter
+# Compose rules, https://github.com/mrmans0n/compose-rules
+# It adds NEW rules (ModifierParameterPosition, ReusedModifierInstance, ModifierDefaultValue,
+# ComposeFunctionName, PublicComposablePreview, UnnecessaryEventHandlerParameter). It removes
+# NONE of the 6,307 and would only add findings. Its docs state no position on Compose
+# Multiplatform source sets, and its detekt flavour pins to a detekt 2.0 alpha — pinning a
+# third-party ruleset to an alpha, on a toolchain that is itself Gradle 9.8-rc-2 / AGP
+# 9.5.0-alpha06 / CMP 1.13.0-alpha01, is two alphas deep for zero movement on this task.
+# Revisit as a standalone opt-in pass on kmp-toolkit AFTER this standard lands and the
+# baselines are honest. Do not bundle it into the remediation.
+#
+# SharedKtlintConventionPlugin vs SharedSpotlessConventionPlugin
+# (/Users/darkpandawarrior/Repos/KMP/kmp-build-logic/convention/src/main/kotlin/): the plugin's
+# own KDoc says pick one per module. Pick shared.ktlint — it is what the four app repos already
+# apply directly, and running Spotless's bundled ktlint against the same sources is exactly the
+# duplicate-owner problem this whole standard exists to remove.
+# -----------------------------------------------------------------------------

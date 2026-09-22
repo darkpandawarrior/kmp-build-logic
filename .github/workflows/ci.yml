@@ -21,5 +21,8 @@ jobs:
           distribution: zulu
           java-version: '21'
       - uses: gradle/actions/setup-gradle@v4
-      - name: Build + test
-        run: ./gradlew :convention:validatePlugins :convention:assemble --stacktrace
+      - name: Build + test + quality gate
+        # :convention:check pulls in detekt, ktlintCheck, validatePlugins and test. Naming the
+        # aggregate rather than the individual tasks means a rule or tool added later is gated
+        # without editing this file.
+        run: ./gradlew :convention:check :convention:assemble --stacktrace

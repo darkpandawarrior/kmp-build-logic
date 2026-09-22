@@ -21,41 +21,42 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
  * lifecycle.viewmodel.compose, lifecycle.runtime.compose, koin.android, kotlinx.coroutines.android).
  */
 class SharedCmpFeatureConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        pluginManager.apply("shared.kmp.compose")
+    override fun apply(target: Project) =
+        with(target) {
+            pluginManager.apply("shared.kmp.compose")
 
-        val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
+            val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
-        extensions.configure<KotlinMultiplatformExtension> {
-            sourceSets.getByName("commonMain") {
-                dependencies {
-                    // Compose Multiplatform baseline
-                    implementation(libs.findLibrary("runtime").get())
-                    implementation(libs.findLibrary("ui").get())
-                    implementation(libs.findLibrary("material3").get())
-                    implementation(libs.findLibrary("foundation").get())
-                    implementation(libs.findLibrary("material.icons.extended").get())
-                    implementation(libs.findLibrary("ui.tooling.preview.mp").get())
-                    // Koin
-                    implementation(libs.findLibrary("koin.core").get())
-                    implementation(libs.findLibrary("koin.compose").get())
-                    implementation(libs.findLibrary("koin.compose.viewmodel").get())
-                    // ViewModel + Navigation + DateTime
-                    implementation(libs.findLibrary("lifecycle.viewmodel").get())
-                    implementation(libs.findLibrary("jb.navigation.compose").get())
-                    implementation(libs.findLibrary("kotlinx.datetime").get())
+            extensions.configure<KotlinMultiplatformExtension> {
+                sourceSets.getByName("commonMain") {
+                    dependencies {
+                        // Compose Multiplatform baseline
+                        implementation(libs.findLibrary("runtime").get())
+                        implementation(libs.findLibrary("ui").get())
+                        implementation(libs.findLibrary("material3").get())
+                        implementation(libs.findLibrary("foundation").get())
+                        implementation(libs.findLibrary("material.icons.extended").get())
+                        implementation(libs.findLibrary("ui.tooling.preview.mp").get())
+                        // Koin
+                        implementation(libs.findLibrary("koin.core").get())
+                        implementation(libs.findLibrary("koin.compose").get())
+                        implementation(libs.findLibrary("koin.compose.viewmodel").get())
+                        // ViewModel + Navigation + DateTime
+                        implementation(libs.findLibrary("lifecycle.viewmodel").get())
+                        implementation(libs.findLibrary("jb.navigation.compose").get())
+                        implementation(libs.findLibrary("kotlinx.datetime").get())
+                    }
                 }
-            }
-            sourceSets.getByName("androidMain") {
-                dependencies {
-                    implementation(libs.findLibrary("core.ktx").get())
-                    implementation(libs.findLibrary("activity.compose").get())
-                    implementation(libs.findLibrary("lifecycle.viewmodel.compose").get())
-                    implementation(libs.findLibrary("lifecycle.runtime.compose").get())
-                    implementation(libs.findLibrary("koin.android").get())
-                    implementation(libs.findLibrary("kotlinx.coroutines.android").get())
+                sourceSets.getByName("androidMain") {
+                    dependencies {
+                        implementation(libs.findLibrary("core.ktx").get())
+                        implementation(libs.findLibrary("activity.compose").get())
+                        implementation(libs.findLibrary("lifecycle.viewmodel.compose").get())
+                        implementation(libs.findLibrary("lifecycle.runtime.compose").get())
+                        implementation(libs.findLibrary("koin.android").get())
+                        implementation(libs.findLibrary("kotlinx.coroutines.android").get())
+                    }
                 }
             }
         }
-    }
 }
