@@ -12,7 +12,7 @@
 ![Plugins](https://img.shields.io/badge/plugins-18-success)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-**[Why](#why-this-exists)** · **[Features](#features)** · **[Architecture](#architecture)** · **[Tech stack](#tech-stack)** · **[Getting started](#getting-started)** · **[Roadmap](#roadmap)**
+**[API reference](https://darkpandawarrior.github.io/kmp-build-logic/)** · **[Why](#why-this-exists)** · **[Features](#features)** · **[Architecture](#architecture)** · **[Tech stack](#tech-stack)** · **[Getting started](#getting-started)** · **[Roadmap](#roadmap)**
 
 **Portfolio:** [cv-siddharth.vercel.app](https://cv-siddharth.vercel.app/) &nbsp;·&nbsp; **Consumers:** [Doori](https://github.com/darkpandawarrior/Doori) &nbsp;·&nbsp; [PaymentsLab-KMP](https://github.com/darkpandawarrior/PaymentsLab-KMP) &nbsp;·&nbsp; [kmp-toolkit](https://github.com/darkpandawarrior/kmp-toolkit) &nbsp;·&nbsp; [Candidai](https://github.com/darkpandawarrior/Candidai) &nbsp;·&nbsp; [Gaddi](https://github.com/darkpandawarrior/Gaddi) &nbsp;·&nbsp; [kmp-app-template](https://github.com/darkpandawarrior/kmp-app-template)
 
