@@ -25,7 +25,7 @@ import org.gradle.kotlin.dsl.withType
  * Nobody wrote those names, nobody can change them, and a clean rebuild reproduces them exactly.
  * Doing it here rather than only in `detekt.yml` covers EVERY rule, including rules enabled later
  * that nobody remembers to add the exclusion to. The per-rule `excludes:` in the shared
- * `detekt.yml` stays as well, because Mileway, Kursi and cv-siddharth do not apply this plugin.
+ * `detekt.yml` stays as well, because Doori, Gaddi and cv-siddharth do not apply this plugin.
  */
 class SharedDetektConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) =
