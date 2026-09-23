@@ -15,7 +15,7 @@
 #
 # THE TRAP THAT MAKES THIS FILE FRAGILE
 #   detekt's `excludes:` REPLACES the built-in default list, it does not extend it.
-#   Mileway's config already records getting burned by this: omitting the test globs
+#   Doori's config already records getting burned by this: omitting the test globs
 #   from naming.FunctionNaming turned every backtick-named test function into a
 #   violation. So the *notOurs anchor below re-lists detekt 2.0's defaults IN FULL,
 #   plus the KMP test source sets detekt ships no default for but this family targets
@@ -33,7 +33,7 @@ config:
 # -----------------------------------------------------------------------------
 comments:
   # KDoc-on-everything produces noise, not documentation, in a UI-heavy codebase.
-  # Carried forward from Mileway/HireSignal unchanged — this one was always right.
+  # Carried forward from Doori/Candidai unchanged — this one was always right.
   UndocumentedPublicClass:
     active: false
   UndocumentedPublicFunction:
@@ -68,7 +68,7 @@ complexity:
       - '**/appleTest/**'
       - '**/nativeTest/**'
       - '**/*.kts'                # Gradle scripts are configuration, not application logic.
-    allowedComplexity: 20         # Kursi/PaymentsLab/toolkit already at 20; Mileway was 15.
+    allowedComplexity: 20         # Gaddi/PaymentsLab-KMP/toolkit already at 20; Doori was 15.
                                   # 20 is the family number: game-rule and payment-orchestration
                                   # state machines are legitimately branchy.
     ignoreSimpleWhenEntries: true # A `when` over a sealed UiState is ONE decision expressed in
@@ -77,7 +77,7 @@ complexity:
   LongMethod:
     excludes: *notOurs            # ARTEFACT: generated Compose resource accessors declare
                                   # 100-line _collectCommonMainString0Resources functions.
-                                  # Mileway already had this exclusion on this one rule; it is
+                                  # Doori already had this exclusion on this one rule; it is
                                   # now on every rule that needs it.
     allowedLines: 80
     ignoreAnnotated: &composable
@@ -89,7 +89,7 @@ complexity:
   LongParameterList:
     excludes: *notOurs
     allowedFunctionParameters: 10      # A Compose entry point takes host + nav callbacks +
-    allowedConstructorParameters: 10   # modifier + VM default. PaymentsLab's 10 is the realistic
+    allowedConstructorParameters: 10   # modifier + VM default. PaymentsLab-KMP's 10 is the realistic
     ignoreDefaultParameters: true      # number; a parameter with a default is not a burden on
     ignoreAnnotated: *composable       # the caller, so it should not count.
   TooManyFunctions:
@@ -100,12 +100,12 @@ complexity:
     allowedFunctionsPerObject: 20
     allowedFunctionsPerEnum: 10
     ignoreAnnotatedFunctions:
-      # ARTEFACT (78 findings, e.g. Mileway CoreUiPreviews.kt, LoadingAndIndicators.kt,
+      # ARTEFACT (78 findings, e.g. Doori CoreUiPreviews.kt, LoadingAndIndicators.kt,
       # CompassGaugeHero.kt). A file holding thirty composables is a component catalogue;
       # a file holding thirty previews is a preview sheet. Neither is a god class, and the
       # metric measures the wrong thing on them. Prescribed by detekt's own Compose guide:
       # https://detekt.dev/docs/introduction/compose/
-      # This does NOT rubber-stamp the rule: Kursi's five hits (AppPrefs, GameSession, Engine,
+      # This does NOT rubber-stamp the rule: Gaddi's five hits (AppPrefs, GameSession, Engine,
       # SocialDirector, KursiVoice) are real classes and survive. They are debt.
       - 'Composable'
       - 'Preview'
@@ -117,8 +117,8 @@ complexity:
 
 # -----------------------------------------------------------------------------
 coroutines:
-  # Promoted from the Kursi/toolkit/cv lineage to the whole family. These catch real
-  # structured-concurrency bugs and cost nothing — Mileway, HireSignal and PaymentsLab
+  # Promoted from the Gaddi/toolkit/cv lineage to the whole family. These catch real
+  # structured-concurrency bugs and cost nothing — Doori, Candidai and PaymentsLab-KMP
   # were simply never given them.
   active: true
   GlobalCoroutineUsage:
@@ -145,13 +145,13 @@ exceptions:
   TooGenericExceptionCaught:
     excludes: *notOurs
     active: true
-    # DELIBERATELY OVERTURNING Mileway's and PaymentsLab's `active: false`.
-    # Mileway's recorded reason is "runCatching { } is idiomatic in this codebase".
+    # DELIBERATELY OVERTURNING Doori's and PaymentsLab-KMP's `active: false`.
+    # Doori's recorded reason is "runCatching { } is idiomatic in this codebase".
     # That reason does not hold: this rule fires on `catch` clauses, and runCatching {} has
-    # none — it returns a Result. It never triggered the rule. Mileway shows zero findings
-    # only because the rule is off, while Kursi (7), kmp-toolkit (13) and cv (2) run it on
+    # none — it returns a Result. It never triggered the rule. Doori shows zero findings
+    # only because the rule is off, while Gaddi (7), kmp-toolkit (13) and cv (2) run it on
     # and carry 22 real `catch (e: Exception)` sites between them.
-    # Re-enabling WILL surface new findings in Mileway and PaymentsLab. They are genuine.
+    # Re-enabling WILL surface new findings in Doori and PaymentsLab-KMP. They are genuine.
     # Baselining them is not an option — see mustFixNotSuppress.
     exceptionNames:
       - 'ArrayIndexOutOfBoundsException'
@@ -164,7 +164,7 @@ exceptions:
     allowedExceptionNameRegex: '_|(ignored)'
   SwallowedException:
     excludes: *notOurs
-    active: true                  # Overturns PaymentsLab's `active: false`. A swallowed
+    active: true                  # Overturns PaymentsLab-KMP's `active: false`. A swallowed
                                   # exception in a payments orchestrator is the bug you get
                                   # paged for; this is the last rule to turn off in this repo.
   TooGenericExceptionThrown:
@@ -185,14 +185,14 @@ naming:
     # `val _columnIndexOfCreatedAtMs = getColumnIndexOrThrow(_stmt, "createdAtMs")`.
     # The underscore convention is Room's, applied by KSP at build time.
     # The 5 SURVIVORS ARE REAL and are NOT covered by this exclusion:
-    #   Mileway AdvanceHistoryScreen/AnalyticsHomeScreen/PayablesHomeScreen
+    #   Doori AdvanceHistoryScreen/AnalyticsHomeScreen/PayablesHomeScreen
     #     `val MONTHS = arrayOf("Jan", ...)` — a local SCREAMING_SNAKE val, duplicated in three
     #     screens and reallocated on every recomposition. Hoist to one `private val Months`.
     #   cv-siddharth CvTheme.kt `val DisplayFamily = displayFamily`, `val MonoFamily = ...`
   ConstructorParameterNaming:
     excludes: *notOurs
     # ARTEFACT (80 of 81). Generated `<Dao>_Impl(__db: RoomDatabase)` constructors.
-    # The 1 survivor is real: Mileway NetworkRequests.kt `EmptyRequest(val _empty: String? = null)`.
+    # The 1 survivor is real: Doori NetworkRequests.kt `EmptyRequest(val _empty: String? = null)`.
   FunctionParameterNaming:
     excludes: *notOurs
     # ARTEFACT (10, all generated). Missing from the brief's list; it needs the same exclusion.
@@ -203,7 +203,7 @@ naming:
     # Belt AND braces, on purpose. `ignoreAnnotated` is the precise instrument, but if the
     # annotation fails to match under a per-source-set task running without type resolution,
     # EVERY composable in the family becomes a violation at once. The permissive pattern is
-    # Mileway's proven fallback (2 findings family-wide with it in place). Keeping both makes
+    # Doori's proven fallback (2 findings family-wide with it in place). Keeping both makes
     # the outcome independent of detekt's resolution mode.
     # ARTEFACT this also covers: generated `_collectCommonMainString0Resources`.
   TopLevelPropertyNaming:
@@ -225,13 +225,13 @@ naming:
     # declarations per file: ActionMomentOverlay.kt holds MomentHost, AppLocale.kt holds
     # LocalAppLocale, CurrentLocationPinMap.kt holds LocationPin, Routing.kt holds StandingDto,
     # GameMoments.kt holds SeatIdResolver.
-    # PaymentsLab already made this call AND matched it on the ktlint side
-    # (ktlint_standard_filename = disabled). Kursi/Mileway/toolkit/cv left the two tools
+    # PaymentsLab-KMP already made this call AND matched it on the ktlint side
+    # (ktlint_standard_filename = disabled). Gaddi/Doori/toolkit/cv left the two tools
     # disagreeing, which is where the 49 came from. This MUST stay paired with the
     # .editorconfig line in ktlintStandard — one without the other just moves the noise.
   InvalidPackageDeclaration:
     excludes: *notOurs
-    active: true                  # 6 real hits (Mileway LedgerDirection.kt, PaperDirection.kt,
+    active: true                  # 6 real hits (Doori LedgerDirection.kt, PaperDirection.kt,
                                   # SignalDirection.kt declare com.mileway.core.ui.theme from
                                   # the wrong directory). Fix with `git mv`. Never baseline a
                                   # package/directory mismatch — it breaks IDE navigation and
@@ -253,16 +253,16 @@ style:
   MagicNumber:
     excludes: *notOurs
     active: true
-    # NOT AN ARTEFACT RULE. Overturns PaymentsLab's `active: false` outright.
+    # NOT AN ARTEFACT RULE. Overturns PaymentsLab-KMP's `active: false` outright.
     # 802 of the 1,975 findings are Room's generated column-index arithmetic and die with
     # *notOurs. Of the 1,173 that remain, the named-context sample is unambiguous business
     # logic:
     #   kmp-toolkit KalmanSmoother.kt$111320.0        (metres per degree of latitude)
     #   kmp-toolkit KeystoreCrypto.kt$256             (AES key size)
     #   kmp-toolkit DynamicIntervalCalculator$1.25/1.5/1.75
-    #   Mileway NetworkModels.kt TrackMileageStatusResponse$200/504/505  (HTTP status codes)
-    #   Mileway *Repository/*ViewModel $86_400_000L, $3_600_000L, $10_000.0
-    #   Kursi AppPrefs.kt DecisionGrade.Companion$12/45/70, Elo.kt$400.0
+    #   Doori NetworkModels.kt TrackMileageStatusResponse$200/504/505  (HTTP status codes)
+    #   Doori *Repository/*ViewModel $86_400_000L, $3_600_000L, $10_000.0
+    #   Gaddi AppPrefs.kt DecisionGrade.Companion$12/45/70, Elo.kt$400.0
     # A bare 111320.0 in a Kalman smoother is the exact defect this rule exists to catch.
     # Turning MagicNumber off to make a number go down is rubber-stamping the debt.
     ignorePropertyDeclaration: true          # `val CardRadius = 16.dp` is self-documenting.
@@ -277,28 +277,28 @@ style:
       - 'Composable'
       - 'androidx.compose.runtime.Composable'
       # 16.dp / 0.6f alpha / 1f weight are Compose's vocabulary inside a @Composable tree.
-      # Mileway never had this line — that is where most of its 791 non-generated hits sit
+      # Doori never had this line — that is where most of its 791 non-generated hits sit
       # (AnalyticsHomeScreen.kt: 13 composables, 30 findings, no DrawScope; it clears entirely).
-      # HONEST LIMIT, measured: Kursi and cv-siddharth ALREADY carry this and still hold 85 and
+      # HONEST LIMIT, measured: Gaddi and cv-siddharth ALREADY carry this and still hold 85 and
       # 112 UI-file findings, because the survivors live in `DrawScope` extension functions and
-      # Canvas draw lambdas, which carry no annotation for any ignore to match (verified: Kursi
+      # Canvas draw lambdas, which carry no annotation for any ignore to match (verified: Gaddi
       # TutorialScreen.kt:999 `0.025f` inside `DrawScope.drawFeltGuilloche()`, HomeScreen.kt:2341
       # `0.86f` inside a Canvas draw lambda). Those are NOT artefacts —
       # `private const val NeedleRadiusFraction = 0.86f` is strictly better code, and the
       # PascalCase TopLevelPropertyNaming above is what makes writing it idiomatic.
       - 'Preview'
       - 'androidx.compose.ui.tooling.preview.Preview'
-      # Mileway's project-local preview annotations, kept from its existing config:
+      # Doori's project-local preview annotations, kept from its existing config:
       - 'PreviewLightDark'
       - 'PreviewMatrix'
       - 'PreviewFontScales'
       - 'PreviewDevices'
       - 'PreviewStates'
     ignoreNumbers:
-      # Keep this list SHORT. Kursi/toolkit/cv list 0 through 10 inclusive, which silently
+      # Keep this list SHORT. Gaddi/toolkit/cv list 0 through 10 inclusive, which silently
       # exempts `if (retries > 5)` and `grade >= 7`. -1/0/1/2 are detekt's defaults (identity,
       # empty, off-by-one, halving); 100 is percentage conversion; 360 is degrees.
-      # Mileway's '800' and Kursi's '1000' are dropped: an 800ms animation and a 1000ms debounce
+      # Doori's '800' and Gaddi's '1000' are dropped: an 800ms animation and a 1000ms debounce
       # are timings that deserve names.
       - '-1'
       - '0'
@@ -311,14 +311,14 @@ style:
     # NOT forgiveness — a SINGLE-OWNER decision. ktlint's standard:max-line-length owns line
     # length for this family, via .editorconfig. Two tools enforcing one rule at two different
     # numbers is how the family ended up with detekt at its 120 default, .editorconfig at 160
-    # in Mileway/Kursi/HireSignal and 120 in PaymentsLab. The 235 MaxLineLength entries in
-    # Mileway's baseline are already dead under this setting. The single number is set once,
+    # in Doori/Gaddi/Candidai and 120 in PaymentsLab-KMP. The 235 MaxLineLength entries in
+    # Doori's baseline are already dead under this setting. The single number is set once,
     # in .editorconfig — see ktlintStandard.
   WildcardImport:
     active: false
     # Compose and the design-system modules pull dozens of symbols per file and the IDE
     # collapses them; fighting that produces churn, not clarity. MUST stay paired with
-    # ktlint_standard_no-wildcard-imports = disabled — Kursi is the only repo that currently
+    # ktlint_standard_no-wildcard-imports = disabled — Gaddi is the only repo that currently
     # pairs them, the rest leave ktlint contradicting detekt.
   ForbiddenComment:
     active: false                 # TODO(ios)/TODO(wasm) markers track real unimplemented
@@ -327,8 +327,8 @@ style:
     excludes: *notOurs
     max: 4
     excludeGuardClauses: true
-    # 89 non-generated findings, 61 of them Mileway — because Mileway never configured this
-    # rule and ran on detekt's default max: 2, while Kursi/toolkit/cv used 4 and PaymentsLab 5.
+    # 89 non-generated findings, 61 of them Doori — because Doori never configured this
+    # rule and ran on detekt's default max: 2, while Gaddi/toolkit/cv used 4 and PaymentsLab-KMP 5.
     # Four different effective thresholds for one rule across one family.
     # `?: return` / `if (x == null) return` at the top of a function are preconditions, not
     # branches; early return for Loading/Error/Empty is how a Compose screen is written.
@@ -345,7 +345,7 @@ style:
                                   # declarations, not control flow.
   MayBeConstant:
     excludes: *notOurs
-    active: true                  # 21 real hits, all Kursi KursiTheme.kt TextureTokens
+    active: true                  # 21 real hits, all Gaddi KursiTheme.kt TextureTokens
                                   # (`val teakHatchAlpha = 0.04f`, `val guillocheDensity = 12`).
                                   # `const val` is free and removes a field read per access on
                                   # a shader draw path. Ninety seconds of work; it gets done.
@@ -358,7 +358,7 @@ style:
   UnusedParameter:
     excludes: *notOurs
     allowedNames: '_|ignored|expected'
-    # 56 real hits and NOT an artefact. Kursi HomeScreen.kt `onOnlineTap: () -> Unit`,
+    # 56 real hits and NOT an artefact. Gaddi HomeScreen.kt `onOnlineTap: () -> Unit`,
     # LobbyScreen.kt `seed: Long`, TutorialScreen.kt `isLast`/`role`, Components.kt
     # `faceUp: Boolean = true`/`influenceAlive: Int`. Every call site still computes and passes
     # these for nothing. In a shared design-system module, dead parameter surface propagates to
@@ -403,7 +403,7 @@ style:
 #       exclude("**/build/generated/**")
 #   }
 #
-# Keep the YAML excludes as well: Mileway, Kursi and cv-siddharth do not apply the shared
+# Keep the YAML excludes as well: Doori, Gaddi and cv-siddharth do not apply the shared
 # convention plugin, and a repo that drifts off it must not silently lose the exclusion.
 # Belt and braces, same reasoning as FunctionNaming above.
 # -----------------------------------------------------------------------------
