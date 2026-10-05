@@ -9,7 +9,7 @@ import org.gradle.kotlin.dsl.configure
  * `:security` + its 11 payment-provider modules).
  *
  * Applies AGP library + Compose-compiler plugins and the shared android config identical across
- * those 12 modules: compileSdk 37, minSdk 24, Java 21, Compose enabled, and a single "release"
+ * those 12 modules: compileSdk 37, minSdk 24, Java 25, Compose enabled, and a single "release"
  * variant published with sources. Module-specific config (namespace, dependencies) stays in the
  * consumer's own `android { }` / `dependencies { }` blocks.
  */
@@ -25,8 +25,8 @@ class SharedAndroidLibraryConventionPlugin : Plugin<Project> {
                 compileSdk = CompileSdk
                 defaultConfig { minSdk = MinSdk }
                 compileOptions {
-                    sourceCompatibility = JavaVersion.VERSION_21
-                    targetCompatibility = JavaVersion.VERSION_21
+                    sourceCompatibility = JavaVersion.VERSION_25
+                    targetCompatibility = JavaVersion.VERSION_25
                 }
                 buildFeatures {
                     compose = true

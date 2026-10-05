@@ -7,7 +7,7 @@
 [![CI](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/ci.yml/badge.svg)](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/ci.yml)
 [![No AI attribution](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/no-ai-attribution.yml/badge.svg)](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/no-ai-attribution.yml)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.4.20-7F52FF?logo=kotlin&logoColor=white)
-![AGP](https://img.shields.io/badge/AGP-9.5.0--alpha06-3DDC84?logo=android&logoColor=white)
+![AGP](https://img.shields.io/badge/AGP-9.5.0--alpha08-3DDC84?logo=android&logoColor=white)
 ![Compose Multiplatform](https://img.shields.io/badge/Compose%20MP-1.13.0--alpha01-4285F4?logo=jetpackcompose&logoColor=white)
 ![Plugins](https://img.shields.io/badge/plugins-18-success)
 ![License](https://img.shields.io/badge/license-MIT-blue)
@@ -71,8 +71,8 @@ on purpose, see [What's deliberately not here](#whats-deliberately-not-here).
 | | `shared.kmp.compose` | `shared.kmp.library` + Compose Multiplatform + Compose compiler plugins, Compose-metrics wiring |
 | | `shared.cmp.feature` | `shared.kmp.compose` + the standard feature-module dep set (Compose runtime/UI/Material3, Koin, JetBrains navigation-compose, lifecycle-viewmodel, kotlinx-datetime) |
 | | `shared.kmp.pure` | Kotlin Multiplatform only, `jvm()`, `iosArm64()`, `iosSimulatorArm64()`, `wasmJs { browser(); nodejs() }`, for platform-SDK-free leaf modules |
-| **Android** | `shared.android.application` | AGP application + Compose-compiler plugins, `compileSdk 37` / Java 21 / Compose enabled |
-| | `shared.android.library` | AGP library + Compose-compiler plugins for an Android-only leaf module (e.g. kmp-toolkit's `:security` + its 11 payment-provider modules), `compileSdk 37` / `minSdk 24` / Java 21, single "release" variant with sources |
+| **Android** | `shared.android.application` | AGP application + Compose-compiler plugins, `compileSdk 37` / Java 25 / Compose enabled |
+| | `shared.android.library` | AGP library + Compose-compiler plugins for an Android-only leaf module (e.g. kmp-toolkit's `:security` + its 11 payment-provider modules), `compileSdk 37` / `minSdk 24` / Java 25, single "release" variant with sources |
 | | `shared.android.firebase` | Applies after `shared.android.application`, wires `google-services` + `firebase-crashlytics` Gradle plugins, the Firebase BOM/Analytics/Crashlytics runtime libs (looked up from the consumer's own catalog), and enables Crashlytics mapping-file upload for every build type |
 | **Testing** | `shared.test` | JVM/Android unit-test stack on `testImplementation`: JUnit, MockK, coroutines-test, Turbine, Koin-test. Does **not** reach `commonTest` |
 | | `shared.kmp.test` | Multiplatform sibling of `shared.test`: the KMP-capable subset (kotlin-test, coroutines-test, Turbine, Koin-test) on `commonTest`, so it reaches every declared target including iOS |
@@ -211,7 +211,7 @@ kmp-build-logic/
 | Layer | Version |
 |---|---|
 | Kotlin | 2.4.20 |
-| Android Gradle Plugin | 9.5.0-alpha06 |
+| Android Gradle Plugin | 9.5.0-alpha08 |
 | Compose Multiplatform | 1.13.0-alpha01 |
 | Gradle | 9.8.0-rc-2 |
 | Detekt | 2.0.0-alpha.6 |
@@ -224,7 +224,7 @@ kmp-build-logic/
 | google-services | 4.5.0 |
 | firebase-crashlytics (Gradle plugin) | 3.0.8 |
 | Firebase BOM | 34.19.0 |
-| JDK | 21 (resolved automatically via the foojay toolchain resolver if not installed) |
+| JDK | 25 (Corretto; the Gradle daemon is pinned via `toolchainVendor=AMAZON`, resolved through the foojay toolchain resolver if not installed) |
 
 ## Getting started
 

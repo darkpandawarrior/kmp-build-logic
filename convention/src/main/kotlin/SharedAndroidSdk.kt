@@ -9,3 +9,6 @@ internal const val CompileSdk = 37
 
 /** Lowest Android version the family supports. Raising it drops devices — a product decision. */
 internal const val MinSdk = 24
+
+/** JDK level every KMP module compiles with (class file 69). Matches the daemon JVM and CI. */
+internal const val JavaToolchain = 25
