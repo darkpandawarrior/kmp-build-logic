@@ -20,6 +20,7 @@ class SharedKmpLibraryConventionPlugin : Plugin<Project> {
                 apply("com.android.kotlin.multiplatform.library")
             }
             extensions.configure<KotlinMultiplatformExtension> {
+                jvmToolchain(JavaToolchain)
                 iosArm64()
                 iosSimulatorArm64()
             }

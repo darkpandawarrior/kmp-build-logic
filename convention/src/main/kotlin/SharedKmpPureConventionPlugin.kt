@@ -23,6 +23,7 @@ class SharedKmpPureConventionPlugin : Plugin<Project> {
             pluginManager.apply("org.jetbrains.kotlin.multiplatform")
 
             extensions.configure<KotlinMultiplatformExtension> {
+                jvmToolchain(JavaToolchain)
                 jvm()
                 iosArm64()
                 iosSimulatorArm64()
