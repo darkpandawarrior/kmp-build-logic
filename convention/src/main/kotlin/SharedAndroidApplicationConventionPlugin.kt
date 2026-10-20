@@ -24,7 +24,9 @@ class SharedAndroidApplicationConventionPlugin : Plugin<Project> {
             }
             configureComposeCompilerMetrics()
             extensions.configure<ApplicationExtension> {
-                compileSdk = CompileSdk
+                compileSdk {
+                    version = release(CompileSdk) { minorApiLevel = CompileSdkMinor }
+                }
                 compileOptions {
                     sourceCompatibility = JavaVersion.VERSION_25
                     targetCompatibility = JavaVersion.VERSION_25
