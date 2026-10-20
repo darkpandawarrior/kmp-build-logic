@@ -22,7 +22,9 @@ class SharedAndroidLibraryConventionPlugin : Plugin<Project> {
                 apply("org.jetbrains.kotlin.plugin.compose")
             }
             extensions.configure<LibraryExtension> {
-                compileSdk = CompileSdk
+                compileSdk {
+                    version = release(CompileSdk) { minorApiLevel = CompileSdkMinor }
+                }
                 defaultConfig { minSdk = MinSdk }
                 compileOptions {
                     sourceCompatibility = JavaVersion.VERSION_25

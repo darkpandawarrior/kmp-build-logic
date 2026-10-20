@@ -7,6 +7,9 @@
  */
 internal const val CompileSdk = 37
 
+/** Minor API level within [CompileSdk]: 37.1. */
+internal const val CompileSdkMinor = 1
+
 /** Lowest Android version the family supports. Raising it drops devices — a product decision. */
 internal const val MinSdk = 24
 
