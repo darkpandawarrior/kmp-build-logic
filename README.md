@@ -132,14 +132,14 @@ KSP configurations are the fixed set above.
 
 ```mermaid
 graph LR
-    subgraph chain["KMP chain — each builds on the one before it"]
+    subgraph chain["KMP chain: each builds on the one before it"]
         KL["shared.kmp.library"]
         KC["shared.kmp.compose"]
         CF["shared.cmp.feature"]
         KL --> KC --> CF
     end
 
-    subgraph standalone["Independent plugins — no chain"]
+    subgraph standalone["Independent plugins, no chain"]
         KP["shared.kmp.pure"]
         AA["shared.android.application"]
         AL["shared.android.library"]
@@ -202,7 +202,7 @@ kmp-build-logic/
 │       ├── SharedRoomConventionPlugin.kt
 │       └── SharedFlavorsConventionPlugin.kt
 ├── gradle/libs.versions.toml     # plugin-classpath coordinates only (compileOnly)
-├── compose_stability.conf        # template — copy into a consumer's root
+├── compose_stability.conf        # template, copy into a consumer's root
 └── settings.gradle.kts
 ```
 
