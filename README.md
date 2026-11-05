@@ -6,9 +6,9 @@
 
 [![CI](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/ci.yml/badge.svg)](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/ci.yml)
 [![No AI attribution](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/no-ai-attribution.yml/badge.svg)](https://github.com/darkpandawarrior/kmp-build-logic/actions/workflows/no-ai-attribution.yml)
-![Kotlin](https://img.shields.io/badge/Kotlin-2.4.20-7F52FF?logo=kotlin&logoColor=white)
-![AGP](https://img.shields.io/badge/AGP-9.5.0--alpha08-3DDC84?logo=android&logoColor=white)
-![Compose Multiplatform](https://img.shields.io/badge/Compose%20MP-1.13.0--alpha01-4285F4?logo=jetpackcompose&logoColor=white)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.4.21-7F52FF?logo=kotlin&logoColor=white)
+![AGP](https://img.shields.io/badge/AGP-9.5.0--alpha10-3DDC84?logo=android&logoColor=white)
+![Compose Multiplatform](https://img.shields.io/badge/Compose%20MP-1.13.0--alpha02-4285F4?logo=jetpackcompose&logoColor=white)
 ![Plugins](https://img.shields.io/badge/plugins-18-success)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
