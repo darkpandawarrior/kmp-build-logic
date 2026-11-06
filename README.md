@@ -77,17 +77,19 @@ The three KMP plugins chain: `shared.kmp.library`, then `shared.kmp.compose` app
 - `shared.kover` does not cover Kotlin/Native, only JVM and Android bytecode.
 - The `room` alias in this repo's catalog versions the `androidx.room3` Gradle plugin, a different artifact line from the `androidx.room` 2.8.x runtime your app pins. They move separately.
 
-## Decisions worth knowing
+## Design choices
 
-- **Binary plugins, not precompiled script plugins.** Real KDoc, an explicit `apply(target: Project)`, and a plugin id that does not depend on a file name. Costs more boilerplate per plugin.
-- **Catalog lookups go through `VersionCatalogsExtension.findLibrary`.** The generated `libs.foo` accessors do not exist for a plugin class compiled before Gradle knows its project.
-- **Plugin classpath dependencies are `compileOnly`.** Otherwise the same plugin can load in two classloaders at two versions and fail at apply time with a `ClassCastException`.
-- **AGP's KMP-library plugin, not `com.android.library`.** It knows about multiplatform source sets. It has no assets-packaging support yet, so `shared.kmp.compose` carries a workaround, `configureComposeResourcesAndroidAssetsWorkaround`.
-- **This repo does not redeclare its catalog in `settings.gradle.kts`.** It sits at `gradle/libs.versions.toml`, which Gradle registers on its own. An explicit `from(...)` fails with "Multiple `from` invocations".
+The plugins are binary plugins written in Kotlin, not precompiled script plugins. That gives real KDoc, an explicit `apply(target: Project)` and a plugin id that does not hang on a file name, at the cost of more boilerplate per plugin.
+
+Catalog lookups go through `VersionCatalogsExtension.findLibrary`, because the generated `libs.foo` accessors do not exist for a plugin class compiled before Gradle knows its project. The plugin classpath dependencies are `compileOnly`; with `implementation` the same plugin can load in two classloaders at two versions and fail at apply time with a `ClassCastException`.
+
+The KMP chain uses AGP's `com.android.kotlin.multiplatform.library` instead of `com.android.library`, since it understands multiplatform source sets. When the workaround was written (AGP 9.4.0-alpha03) it did not package Android assets, so `shared.kmp.compose` carries `configureComposeResourcesAndroidAssetsWorkaround`. This README has not re-checked that against the AGP pinned today.
+
+This repo does not redeclare its own catalog in `settings.gradle.kts`. The file sits at `gradle/libs.versions.toml`, which Gradle registers by itself, and an explicit `from(...)` fails with "Multiple `from` invocations".
 
 ## Versions pinned today
 
-From `gradle/libs.versions.toml` and the wrapper on `main`:
+Read from `gradle/libs.versions.toml` and `gradle-wrapper.properties`:
 
 | | |
 |---|---|
