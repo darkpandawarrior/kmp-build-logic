@@ -3,7 +3,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 
-private const val KtlintVersion = "1.0.1"
+private const val KtlintVersion = "1.8.0"
 
 /**
  * Convention plugin applying Spotless with a ktlint-based Kotlin/Kotlin-script formatter.
