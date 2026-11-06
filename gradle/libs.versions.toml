@@ -1,22 +1,22 @@
 [versions]
-agp = "9.5.0-alpha10"
-kotlin = "2.4.21"
-compose-multiplatform = "1.13.0-alpha02"
+agp = "9.6.0-alpha03"
+kotlin = "2.5.0-Beta2"
+compose-multiplatform = "1.13.0-beta02"
 detekt = "2.0.0-alpha.6"
 ktlint = "14.2.0"
-spotlessVersion = "8.10.2"
-kover = "0.9.9"
+spotlessVersion = "8.11.0"
+kover = "0.9.11"
 # NOTE: this `room` alias versions androidx.room3:room3-gradle-plugin — the Room 3.x KMP line,
 # a DIFFERENT artifact from androidx.room (2.8.x) that consuming apps pin for runtime/compiler.
 # They move independently; do not "align" them.
-room = "3.1.0-alpha01"
-ksp = "2.3.12"
+room = "3.1.0-alpha03"
+ksp = "2.3.13"
 kmpFlavors = "2.10.0"
 googleServices = "4.5.0"
 firebaseCrashlyticsPlugin = "3.0.8"
-firebaseBom = "34.19.0"
+firebaseBom = "35.1.0"
 
-dokka = "2.3.0-Beta"
+dokka = "2.3.0"
 
 [libraries]
 # Gradle-plugin artifacts the convention plugins apply programmatically (compileOnly in convention/build.gradle.kts)
